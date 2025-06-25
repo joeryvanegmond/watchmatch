@@ -1,5 +1,5 @@
 @extends('layouts.app')
 
 @section('content')
-<watchwizard></watchwizard>
+<watchwizard :randomwatches="{{$watches}}"></watchwizard>
 @endsection

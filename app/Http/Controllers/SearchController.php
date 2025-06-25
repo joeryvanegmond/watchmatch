@@ -21,91 +21,108 @@ class SearchController extends Controller
 
     public function index()
     {
-        return view('home');
+        $watches = Watch::inRandomOrder()->limit(20)->get();
+        return view('home', compact('watches'));
     }
 
     public function search(Request $request)
     {
-        $brand = $request->get('brand');
-        $model = $request->get('model');
+        try {
+            $brand = $request->get('brand');
+            $model = $request->get('model');
 
-        if (!$brand || !$model) {
-            return response()->json(['error' => 'Missing query'], 400);
-        }
-        //save original (if not exist)
-        $watchToCompare = Watch::where([
-            ['brand', strtolower($brand)],
-            ['model', strtolower($model)],
-        ])->first();
+            if (!$brand || !$model) {
+                return response()->json(['error' => 'Vul merk en model in'], 400);
+            }
+            //save original (if not exist)
+            $watchToCompare = Watch::where([
+                ['brand', strtolower($brand)],
+                ['model', strtolower($model)],
+            ])->first();
 
-        if (!$watchToCompare) {
-            $foundImage = $this->googleSearch->searchImage($brand . ' ' . $model);
-        
-            $watchToCompare = Watch::create([
-                'brand' => strtolower($brand),
-                'model' => strtolower($model),
-                'image_url' => $foundImage,
-                'price' => null,
-                'url' => $this->CreateURL($brand, $model, ""),
-            ]);
-        }
-        
-        // check if already similarities
-        $similaritiesFromDatabase = $watchToCompare->similarWatches()->get();
-        if (!$similaritiesFromDatabase->isEmpty()) {
-            return response()->json([
-                'original' => $watchToCompare,
-                'similar' => $similaritiesFromDatabase
-            ]);
-        }
-        $results = $this->searchService->search($brand, $model);
-        
-        foreach ($results as $item) {
-            $imageUrl = $this->googleSearch->searchImage($item->brand . ' ' . $item->model);
+            if (!$watchToCompare) {
+                $foundImage = $this->googleSearch->searchImage($brand . ' ' . $model);
 
-            $similarWatch = Watch::updateOrCreate(
-                [
-                    'brand' => strtolower($item->brand), 
-                    'model' => strtolower($item->model),
-                    'variant' => strtolower($item->variant ?? "")
-                ],
-                [
-                    'image_url' => $imageUrl ?? null,
-                    'price' => $item->price ?? null,
-                    'url' => $this->CreateURL($item->brand, $item->model, $item->variant ?? ""),
-                ]
-                );
-
-            $existing = DB::table('watch_similarities')
-            ->where('watch_id', $watchToCompare->id)
-            ->where('similar_watch_id', $similarWatch->id)
-            ->first();
-        
-            if ($existing) {
-                // Verhoog bestaande link_strength
-                DB::table('watch_similarities')
-                    ->where('watch_id', $watchToCompare->id)
-                    ->where('similar_watch_id', $similarWatch->id)
-                    ->increment('link_strength', 0.1);
-            } else {
-                // Voeg nieuwe relatie toe
-                $watchToCompare->similarWatches()->attach($similarWatch->id, [
-                    'link_strength' => 0.1,
+                $watchToCompare = Watch::create([
+                    'brand' => strtolower($brand),
+                    'model' => strtolower($model),
+                    'image_url' => $foundImage,
+                    'price' => null,
+                    'url' => $this->CreateURL($brand, $model, ""),
                 ]);
             }
+
+            // check if already similarities
+            $similaritiesFromDatabase = $watchToCompare->similarWatches()->get();
+            if (!$similaritiesFromDatabase->isEmpty()) {
+                return response()->json([
+                    'original' => $watchToCompare,
+                    'similar' => $similaritiesFromDatabase
+                ]);
+            }
+            $results = $this->searchService->search($brand, $model);
+
+            $similarWatches = collect();
+
+            foreach ($results as $item) {
+                $imageUrl = $this->googleSearch->searchImage($item->brand . ' ' . $item->model);
+
+                $similarWatches->push(Watch::updateOrCreate(
+                    [
+                        'brand' => strtolower($item->brand),
+                        'model' => strtolower($item->model),
+                        'variant' => strtolower($item->variant ?? "")
+                    ],
+                    [
+                        'image_url' => $imageUrl ?? null,
+                        'price' => $item->price ?? null,
+                        'url' => $this->CreateURL($item->brand, $item->model, $item->variant ?? ""),
+                    ]
+                ));
+            }
+            return response()->json([
+                'original' => $watchToCompare,
+                'similar' => $similarWatches
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json(['error' => $th]);
         }
-        return response()->json([
-            'original' => $watchToCompare,
-            'similar' => $watchToCompare->similarWatches()->get()
-        ]);
     }
 
     public function link(Request $request)
     {
+        try {
+            $original = Watch::find($request->original);
+            $id = $request->match;
+                $existing = DB::table('watch_similarities')
+                    ->where('watch_id', $original->id)
+                    ->where('similar_watch_id', $id)
+                    ->first();
 
+                if ($existing) {
+                    // Verhoog bestaande link_strength
+                    DB::table('watch_similarities')
+                        ->where('watch_id', $original->id)
+                        ->where('similar_watch_id', $id)
+                        ->increment('link_strength', 0.1);
+                } else {
+                    // Voeg nieuwe relatie toe
+                    $original->similarWatches()->attach($id, [
+                        'link_strength' => 0.1,
+                    ]);
+                }
+            return response()->json($request);
+        } catch (\Throwable $e) {
+            return response()->json(['error' => $e]);
+        }
+
+
+
+
+        return response()->json($request);
     }
 
-    private function CreateURL(string $brand, string $model, string $variant):string
+    private function CreateURL(string $brand, string $model, string $variant): string
     {
         return "https://www.chrono24.nl/search/index.htm?dosearch=true&watchTypes=U&searchexplain=false&query={$brand}+{$model}";
     }

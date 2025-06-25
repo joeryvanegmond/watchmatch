@@ -3,10 +3,8 @@
 
 @include('layouts.head')
 
-<body>
-    <div class="container-fluid" id="app">
-        @yield('content')
-    </div>
+<body id="app">
+    @yield('content')
 </body>
 <!-- Scripts -->
 @yield('javascript')

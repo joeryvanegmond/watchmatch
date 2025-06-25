@@ -1,57 +1,48 @@
 <template>
-  <div class="row d-flex justify-content-center">
-
-    <div class="col-md-2 p-4 border">
-      <div v-if="hasOriginal">
-            <h4>{{  original.brand[0].toUpperCase() + original.brand.slice(1) }} {{ original.model.toUpperCase() }}</h4>
-            <img :src="original.image_url" alt="afbeelding" width="150" />
-          </div>
+  <div class="row-fluid d-flex m-0">
+    <!-- Error messages -->
+    <div v-if="error" class="bg-red-500 w-100 m-0 top-0 left-0 error-banner position-fixed">
+      <h4>{{ error }}</h4>
     </div>
-
-    <div class="col-md-10 p-4 border d-flex justify-around">
-      
-      <div class="card card-rounded border-light p-4 col-md-6 border-5">
-        <div class="d-flex justify-content-center">
-          <h2>{{ stepTitle }}</h2>
+    <!-- <div class="col-1 border">
+      <div class="fw-bold h5 d-flex justify-content-center mt-4">
+        Filter
+      </div>
+    </div> -->
+    <div class="col-12 ps-4 pe-4 d-flex flex-column justify-between">
+      <div class=" d-flex p-4 m-4 justify-content-center">
+        <input class="col-6 me-4" type="text" v-model="brand" placeholder="Merk" @blur="zoekAlternatieven" required />
+        <input class="col-6 me-3" type="text" v-model="model" placeholder="Model" @blur="zoekAlternatieven" required />
+        <button v-if="brand != '' && model != ''" class="h4" @click="clear">x</button>
+      </div>
+      <!-- Result -->
+      <div class="row d-flex justify-content-center">
+        <div v-if="loading" class="d-flex justify-content-center position-absolute top-50 left-50">
+          <spinningwheel></spinningwheel>
         </div>
-        <div class="progress">
-          <div class="progress-bar" role="progressbar" :style="{ width: step * 33.33 + '%' }" aria-valuenow=""
-            aria-valuemin="0" aria-valuemax="100"></div>
-        </div>
-        <div class="card-body">
-          <div class="" v-if="step === 1">
-            <div class="d-flex flex-column">
-              <input type="text" v-model="brand" placeholder="Merk" />
-              <input type="text" v-model="model" placeholder="Model" />
-            </div>
-            <div>
-              <button class="btn btn-primary" @click="zoekAlternatieven">Volgende</button>
-            </div>
-          </div>
-  
-          <div v-else-if="step === 2">
-            <div v-if="loading">Resultaten ophalen...</div>
-            <div v-else>
-  
-              <slider v-model:watches="watches"/>
-  
-              <div class="d-flex justify-content-between">
-                <button class="btn btn-secondary" @click="setStep(1, 'Voer merk en model in')">Terug</button>
-                <button class="btn btn-primary" @click="setStep(3, 'Samenvatting')">Volgende</button>
+        <transition-group v-if="showWatches" name="watch-fade" tag="div" class="watch-grid">
+          <div class="card watch-card" v-for="(watch, index) in watches" :key="index"
+            :style="{ '--delay': index * 25 + 'ms' }">
+            <img :src="watch.image_url" alt="Watch image" class="watch-card-image" />
+            <div
+              class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
+              style="background: rgba(0, 0, 0, 0.4);">
+              <div class="d-flex justify-content-between justify-content-start ">
+                <div class="fw-bold ps-4 pt-4 h4">{{ watch.brand[0].toUpperCase() + watch.brand.slice(1) }}</div>
+              </div>
+              <div class="position-absolute bottom-0 start-0 w-100">
+                <div class="d-flex p-4 m-2">
+                  <div class="">
+                    {{ watch.model[0].toUpperCase() + watch.model.slice(1) }}
+                  </div>
+                </div>
               </div>
             </div>
+            <button v-if="isSearching" class="btn btn-secondary p-2 m-2 position-absolute top-0 end-0"
+              :id="'watch-' + watch.id" @click="link(watch.id)">Match</button>
           </div>
-  
-          <div v-else-if="step === 3">
-            <div v-for="alt in selectedAlternatives" :key="alt.id">
-              <strong>{{ alt.brand }} {{ alt.model }}</strong><br />
-              <img :src="alt.image_url" alt="afbeelding" width="150" />
-              <a :href="alt.url" target="_blank">Bekijk</a>
-            </div>
-            <button class="btn btn-secondary" @click="setStep(2, 'Matches')">Terug</button>
-            <!-- Later kun je hier een kaartcomponent toevoegen -->
-          </div>
-        </div>
+        </transition-group>
+
       </div>
     </div>
 
@@ -71,31 +62,75 @@ export default {
       watches: [],
       loading: false,
       original: {},
+      error: '',
+      isSearching: false,
+      showWatches: false,
     };
   },
+  props: ['randomwatches'],
   methods: {
     async zoekAlternatieven() {
-      this.loading = true;
-      this.setStep(2, "Matches");
-      axios.get(`/search/?brand=${this.brand}&model=${this.model}`)
-        .then(res => {
-          this.watches = res.data.similar.map(watch => ({
-            ...watch,
-            selected: false,
-          }));
-          this.original = res.data.original;
-        })
-        .catch(err => {
-          console.log('Something went wrong during search for watches: ' + JSON.stringify(err.response.data.error));
-        })
-        .finally(_ => {
-          this.loading = false;
-        });
+
+      if ((this.brand && this.brand.trim() !== '') && (this.model && this.model.trim() !== '')) {
+        this.isSearching = true;
+        this.watches = [];
+        this.loading = true;
+        this.showWatches = false;
+        this.setStep(2, "Matches");
+        axios.get(`/search/?brand=${this.brand}&model=${this.model}`)
+          .then(res => {
+            console.log(res);
+            this.watches = res.data.similar.map(watch => ({
+              ...watch,
+              selected: false,
+            }));
+            this.original = res.data.original;
+          })
+          .catch(err => {
+            this.error = err.response;
+            console.log(err);
+          })
+          .finally(_ => {
+            this.loading = false;
+          });
+      }
+      setTimeout(() => {
+        this.showWatches = true;
+      }, 150);
     },
-    setStep(step, title){
+    setStep(step, title) {
       this.step = step;
       this.stepTitle = title;
     },
+    link(id) {
+      this.loading = true;
+
+      let request = {
+        original: this.original.id,
+        match: id
+      };
+
+      axios.post(`/link`, request)
+        .then(res => {
+          const el = document.getElementById('watch-' + id);
+          el.classList.remove('btn-secondary');
+          el.classList.add('btn-success');
+        })
+        .catch(err => {
+          console.log('Something went wrong during linking watches: ' + JSON.stringify(err.response));
+        })
+        .finally(_ => this.loading = false);
+    },
+    clear() {
+      this.isSearching = false;
+      this.brand = '';
+      this.model = '';
+      this.watches = this.randomwatches;
+      this.showWatches = false;
+      setTimeout(() => {
+        this.showWatches = true;
+      }, 300);
+    }
   },
   computed: {
     hasOriginal() {
@@ -104,9 +139,15 @@ export default {
     selectedAlternatives() {
       return this.watches.filter(a => a.selected);
     },
+    getAlternativesIds() {
+      this.watches.filter(a => a.selected).map(b => b.id);
+    }
   },
   created() {
-        this.stepTitle = "Voer merk en model in"
+    this.watches = this.randomwatches;
+    setTimeout(() => {
+      this.showWatches = true;
+    }, 150);
   }
 };
 </script>
