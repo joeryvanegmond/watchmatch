@@ -7,11 +7,13 @@ use App\Services\SerpApiService;
 use \App\Models\Watch;
 use Illuminate\Support\Facades\DB;
 use App\Services\GoogleSearchService;
+use Illuminate\Support\Facades\Log;
 
 class SearchController extends Controller
 {
     protected SerpApiService $searchService;
     protected GoogleSearchService $googleSearch;
+    protected $placeholder = "https://static.watchpatrol.net/static/explorer/img/no_watch_placeholder.8793368e62ea.png";
 
     public function __construct(SerpApiService $searchService, GoogleSearchService $googleSearch)
     {
@@ -22,6 +24,22 @@ class SearchController extends Controller
     public function index()
     {
         $watches = Watch::inRandomOrder()->limit(20)->get();
+
+        foreach ($watches as $watch) {
+            $imageUrl = $this->placeholder;
+            if ($watch->image_url == null) {
+                try {
+                    $imageUrl = $this->googleSearch->searchImage($watch->brand . ' ' . $watch->model);
+                    $watch->image_url = $imageUrl;
+                    $watch->save();
+                    // lokaal updaten
+                } catch (\Throwable $e) {
+                    Log::warning("Image search failed for {$watch->brand} {$watch->model}: {$e->getMessage()}");
+                }
+                $watch->setAttribute('image_url', $imageUrl);
+            }
+        }
+
         return view('home', compact('watches'));
     }
 
@@ -39,10 +57,9 @@ class SearchController extends Controller
                 ['brand', strtolower($brand)],
                 ['model', strtolower($model)],
             ])->first();
-
             if (!$watchToCompare) {
                 $foundImage = $this->googleSearch->searchImage($brand . ' ' . $model);
-
+                
                 $watchToCompare = Watch::create([
                     'brand' => strtolower($brand),
                     'model' => strtolower($model),
@@ -51,7 +68,7 @@ class SearchController extends Controller
                     'url' => $this->CreateURL($brand, $model, ""),
                 ]);
             }
-
+            
             // check if already similarities
             $similaritiesFromDatabase = $watchToCompare->similarWatches()->get();
             if (!$similaritiesFromDatabase->isEmpty()) {
@@ -61,31 +78,44 @@ class SearchController extends Controller
                 ]);
             }
             $results = $this->searchService->search($brand, $model);
-
             $similarWatches = collect();
-
+            
             foreach ($results as $item) {
-                $imageUrl = $this->googleSearch->searchImage($item->brand . ' ' . $item->model);
-
-                $similarWatches->push(Watch::updateOrCreate(
+                $imageUrl = null;
+            
+                try {
+                    $imageUrl = $this->googleSearch->searchImage($item->brand . ' ' . $item->model);
+                } catch (\Throwable $e) {
+                    Log::warning("Image search failed for {$item->brand} {$item->model}: {$e->getMessage()}");
+                }
+            
+                $similarWatch = Watch::updateOrCreate(
                     [
-                        'brand' => strtolower($item->brand),
-                        'model' => strtolower($item->model),
-                        'variant' => strtolower($item->variant ?? "")
+                        'brand'   => strtolower($item->brand),
+                        'model'   => strtolower($item->model),
+                        'variant' => strtolower($item->variant ?? ''),
                     ],
                     [
-                        'image_url' => $imageUrl ?? null,
-                        'price' => $item->price ?? null,
-                        'url' => $this->CreateURL($item->brand, $item->model, $item->variant ?? ""),
+                        'image_url' => $imageUrl,
+                        'price'     => $item->price ?? null,
+                        'url'       => $this->CreateURL($item->brand, $item->model, $item->variant ?? ''),
                     ]
-                ));
+                );
+                
+                if ($imageUrl == null) {
+                    $placeholder = "https://static.watchpatrol.net/static/explorer/img/no_watch_placeholder.8793368e62ea.png";
+                    $similarWatch->image_url = $placeholder;
+                }
+
+                $similarWatches->push($similarWatch);
             }
+            
             return response()->json([
                 'original' => $watchToCompare,
                 'similar' => $similarWatches
             ]);
         } catch (\Throwable $th) {
-            return response()->json(['error' => $th]);
+            return response()->json(['error' => $th->getMessage()]);
         }
     }
 

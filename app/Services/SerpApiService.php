@@ -16,7 +16,7 @@ class SerpApiService
 
     public function search(string $brand, string $model): array
     {
-        $response = OpenAI::chat()->create([
+            $response = OpenAI::chat()->create([
             'model' => 'gpt-4.1-nano',
             'messages' => [
                 ['role' => 'assistant',
@@ -39,7 +39,7 @@ class SerpApiService
 
         Het merk betreft {$brand} en het model is {$model}
         
-        Geef mij een lijst van horloges die hier sterk op lijken qua stijl, functionaliteit, prijssegment of doelgroep. Het opgegeven horloge zelf mag niet in de lijst voorkomen. Alle merken en modellen moeten uniek zijn in het resultaat.
+        Geef mij een lijst van minimaal 15 horloges die hier sterk op lijken qua stijl, functionaliteit, prijssegment of doelgroep. Het opgegeven horloge zelf mag niet in de lijst voorkomen. Alle merken en modellen moeten uniek zijn in het resultaat.
         
         Geef het resultaat **uitsluitend** terug in exact dit JSON-formaat, zonder uitleg, tekst of extra tekens ervoor of erna. de json moet ook niet beautified zijn. Het moet simpelweg json zijn verpakt in string en ZONDER andere toelichting etc.
         

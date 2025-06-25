@@ -17,16 +17,16 @@
       </div>
       <!-- Result -->
       <div class="row d-flex justify-content-center">
-        <div v-if="loading" class="d-flex justify-content-center position-absolute top-50 left-50">
+        <div v-if="loading" class="d-flex justify-content-center position-absolute top-50 left-0">
           <spinningwheel></spinningwheel>
         </div>
         <transition-group v-if="showWatches" name="watch-fade" tag="div" class="watch-grid">
           <div class="card watch-card" v-for="(watch, index) in watches" :key="index"
             :style="{ '--delay': index * 25 + 'ms' }">
             <img :src="watch.image_url" alt="Watch image" class="watch-card-image" />
-            <div
+            <button
               class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
-              style="background: rgba(0, 0, 0, 0.4);">
+              style="background: rgba(0, 0, 0, 0.4);" @click="zoekAlternatieven(watch)">
               <div class="d-flex justify-content-between justify-content-start ">
                 <div class="fw-bold ps-4 pt-4 h4">{{ watch.brand[0].toUpperCase() + watch.brand.slice(1) }}</div>
               </div>
@@ -37,9 +37,9 @@
                   </div>
                 </div>
               </div>
-            </div>
-            <button v-if="isSearching" class="btn btn-secondary p-2 m-2 position-absolute top-0 end-0"
-              :id="'watch-' + watch.id" @click="link(watch.id)">Match</button>
+            </button>
+            <button v-if="isSearching" class="btn text-secondary p-2 m-2 position-absolute top-0 end-0"
+              :id="'watch-' + watch.id" @click="link(watch.id)"><i class="bi bi-heart-fill"></i></button>
           </div>
         </transition-group>
 
@@ -69,17 +69,22 @@ export default {
   },
   props: ['randomwatches'],
   methods: {
-    async zoekAlternatieven() {
+    async zoekAlternatieven(watch) {
+
+      if (watch != null) {
+        console.log(watch);
+        this.brand = watch.brand;
+        this.model = watch.model;
+      }
 
       if ((this.brand && this.brand.trim() !== '') && (this.model && this.model.trim() !== '')) {
         this.isSearching = true;
         this.watches = [];
         this.loading = true;
         this.showWatches = false;
-        this.setStep(2, "Matches");
+
         axios.get(`/search/?brand=${this.brand}&model=${this.model}`)
           .then(res => {
-            console.log(res);
             this.watches = res.data.similar.map(watch => ({
               ...watch,
               selected: false,
@@ -87,8 +92,8 @@ export default {
             this.original = res.data.original;
           })
           .catch(err => {
-            this.error = err.response;
-            console.log(err);
+            this.error = err.response.data.error;
+            console.log(this.error);
           })
           .finally(_ => {
             this.loading = false;
@@ -113,8 +118,8 @@ export default {
       axios.post(`/link`, request)
         .then(res => {
           const el = document.getElementById('watch-' + id);
-          el.classList.remove('btn-secondary');
-          el.classList.add('btn-success');
+          el.classList.remove('text-secondary');
+          el.classList.add('text-success');
         })
         .catch(err => {
           console.log('Something went wrong during linking watches: ' + JSON.stringify(err.response));
