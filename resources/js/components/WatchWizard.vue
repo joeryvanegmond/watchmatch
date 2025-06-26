@@ -18,17 +18,22 @@
         </button>
       </div>
     </div>
-    <div :class="[filterOpen ? 'col-11' : 'col-12', 'ps-4', 'pe-4', 'm-0', 'd-flex', 'flex-column', 'justify-between', 'border']">
+    <div
+      :class="[filterOpen ? 'col-11' : 'col-12', 'ps-4', 'pe-4', 'm-0', 'd-flex', 'flex-column', 'justify-between', 'border']">
       <div class=" d-flex pt-4 pb-4 justify-content-between flex-column flex-sm-row">
         <div class="col d-flex">
           <button v-if="!filterOpen" class="h1 me-3" @click="toggleFilterMenu(true)"><i
               class="bi bi-filter-left"></i></button>
-          <input class="me-sm-4" type="text" v-model="brand" placeholder="Merk" @blur="zoekAlternatieven(null)"
-            required />
+          <input class="me-sm-4" type="text" v-model="brand" placeholder="Merk"
+            @blur="zoekAlternatieven(null)" required />
         </div>
 
-        <input class="col mt-3 mt-sm-0" type="text" v-model="model" placeholder="Model" @blur="zoekAlternatieven(null)"
-          required />
+
+        <div class="input-group col mt-3 mt-sm-0">
+          <input class="col mt-3 mt-sm-0" type="text" v-model="model" placeholder="Model"
+            @blur="zoekAlternatieven(null)" required />
+          <button @click="zoekAlternatieven(null)" class="border bg-dark mt-3 mt-sm-0" style="border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important;"> <i class="bi h5 bi-search text-white p-2"></i></button>
+        </div>
         <button v-if="brand && model" class="h4 ms-2 mt-1" @click="clear"><i class="bi bi-x"></i></button>
       </div>
       <!-- Result -->
@@ -57,9 +62,9 @@
               :id="'watch-btn-' + watch.id" @click="link(watch.id)"><i class="bi h4 bi-heart-fill"></i></button>
             <div v-if="isSearching" class="progress" style="height: 10px;">
               <div class="progress-bar bg-success" role="progressbar"
-                :style="{ width: Math.min((watch.pivot.link_strength / 2) * 100, 100) + '%' }"
-                :aria-valuenow="Math.min((watch.pivot.link_strength / 2) * 100, 100)" aria-valuemin="0"
-                aria-valuemax="100">
+                :style="{ width: Math.min((watch.pivot ? watch.pivot.link_strength : 0 / 2) * 100, 100) + '%' }"
+                :aria-valuenow="Math.min((watch.pivot ? watch.pivot.link_strength : 0 / 2) * 100, 100)"
+                aria-valuemin="0" aria-valuemax="100">
               </div>
               <!-- {{ Math.min((watch.pivot.link_strength / 2) * 100, 100).toFixed(0) }}% -->
             </div>
