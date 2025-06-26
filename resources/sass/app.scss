@@ -26,6 +26,24 @@ button {
     padding: 1rem;
 }
 
+@media (min-width: 1200px) {
+  .watch-grid {
+      column-count: 4;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .watch-grid {
+      column-count: 2;
+  }
+}
+
+@media (max-width: 767px) {
+  .watch-grid {
+      column-count: 2;
+  }
+}
+
 .card {
     border-radius: 25px !important;
     break-inside: avoid;
