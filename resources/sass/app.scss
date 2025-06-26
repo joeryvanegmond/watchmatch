@@ -1,12 +1,13 @@
 @import 'bootstrap/scss/bootstrap';
 
 input {
-    background-color: rgb(239, 239, 239);
+    // background-color: rgb(239, 239, 239);
     border-radius: 15px;
     padding: 0.7rem 1.4rem;
     width: 100%;
     font-weight: bold;
     color: black;
+    border: 0.2px solid lightgrey;
 }
 
 button {
@@ -73,6 +74,18 @@ button {
     animation: fadeInUp 0.5s ease forwards;
     animation-delay: var(--delay);
   }
+
+  .watch-card.visible {
+    opacity: 0;
+    animation: fadeInUp 0.5s ease forwards;
+    animation-delay: var(--delay);
+  }
+
+  .watch-card.hidden {
+    opacity: 1;
+    animation: fadeOut 0.5s ease forwards;
+    animation-delay: var(--delay);
+  }
   
   /* Extra als fallback */
   @keyframes fadeInUp {
@@ -83,6 +96,17 @@ button {
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(20px);
     }
   }
   

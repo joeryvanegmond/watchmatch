@@ -39,7 +39,6 @@ class SearchController extends Controller
                 $watch->setAttribute('image_url', $imageUrl);
             }
         }
-
         return view('home', compact('watches'));
     }
 
