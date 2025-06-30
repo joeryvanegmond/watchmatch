@@ -1,41 +1,51 @@
 <template>
   <div class="row-fluid d-flex m-0">
     <!-- Error messages -->
-    <div v-if="error" class="bg-red-500 w-100 m-0 top-0 left-0 error-banner position-fixed">
-      <h4>{{ error }}</h4>
-    </div>
-    <div v-if="filterOpen" class="col-1">
+    <div class="col-2 col-md-1 position-fixed">
       <div class="d-flex justify-content-center flex-column mt-4">
-        <button v-if="filterOpen" class="fw-bold h1 mb-4"><i class="bi bi-x"
-            @click="toggleFilterMenu(false)"></i></button>
 
-        <button class="d-flex justify-content-center align-items-center mt-4 mb-4" @click="sortByPrice">
-          <i :class="['h4', 'bi', sortPrice ? 'bi-sort-numeric-down-alt' : 'bi-sort-numeric-up', 'me-2']"></i>
+        <button class="d-flex justify-content-center align-items-center mb-4 text-white" @click="sortByPrice">
+          <i :class="['h2', 'bi', sortPrice ? 'bi-sort-numeric-down-alt' : 'bi-sort-numeric-up', 'me-2']"></i>
         </button>
 
-        <button class="d-flex justify-content-center align-items-center" @click="sortByBrand">
-          <i :class="['h4', 'bi', sortBrand ? 'bi-sort-alpha-up-alt' : 'bi-sort-alpha-down', 'me-2']"></i>
+        <button class="d-flex justify-content-center align-items-center text-white" @click="sortByBrand">
+          <i :class="['h2', 'bi', sortBrand ? 'bi-sort-alpha-up-alt' : 'bi-sort-alpha-down', 'me-2']"></i>
         </button>
       </div>
     </div>
-    <div
-      :class="[filterOpen ? 'col-11' : 'col-12', 'ps-4', 'pe-4', 'm-0', 'd-flex', 'flex-column', 'justify-between', 'border']">
-      <div class=" d-flex pt-4 pb-4 justify-content-between flex-column flex-sm-row">
-        <div class="col d-flex">
-          <button v-if="!filterOpen" class="h1 me-3" @click="toggleFilterMenu(true)"><i
-              class="bi bi-filter-left"></i></button>
-          <input class="me-sm-4" type="text" v-model="brand" placeholder="Merk"
+    <div class="col-2 col-md-1">
+
+    </div>
+    <div :class="['col-10', 'ps-4', 'pe-4', 'm-0', 'd-flex', 'flex-column', 'justify-between']">
+      <div class="col-md-12 d-flex pt-4 pb-4 justify-content-around flex-column flex-sm-row">
+        <div class="col col-lg-4 pe-1">
+          <!-- <button v-if="!filterOpen" class="h1 me-3" @click="toggleFilterMenu(true)"><i
+                class="bi bi-filter-left text-white"></i></button> -->
+          <input class="me-sm-4 text-white" type="text" v-model="brand" placeholder="Merk"
             @blur="zoekAlternatieven(null)" required />
         </div>
 
-
-        <div class="input-group col mt-3 mt-sm-0">
-          <input class="col mt-3 mt-sm-0" type="text" v-model="model" placeholder="Model"
-            @blur="zoekAlternatieven(null)" required />
-          <button @click="zoekAlternatieven(null)" class="border bg-dark mt-3 mt-sm-0" style="border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important;"> <i class="bi h5 bi-search text-white p-2"></i></button>
+        <div class="col col-lg-4 ps-md-3">
+          <div class="input-group mt-3 mt-sm-0">
+            <input class="col mt-sm-0 text-white" type="text" v-model="model" placeholder="Model"
+              @blur="zoekAlternatieven(null)" required />
+            <button @click="zoekAlternatieven(null)" class="border bg-white mt-sm-0"
+              style="border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important;"> <i
+                class="bi h5 bi-search text-black p-2"></i></button>
+            <button v-if="brand && model" class="h4 ms-2 mt-1 text-white" @click="clear"><i
+                class="bi bi-x"></i></button>
+          </div>
         </div>
-        <button v-if="brand && model" class="h4 ms-2 mt-1" @click="clear"><i class="bi bi-x"></i></button>
       </div>
+
+      <!-- Brands -->
+      <div class="row d-flex flex-row">
+        <slider :watches="getBrands" :brand="brand"></slider>
+        <!-- <div class="col" v-for="(brand, index) in getBrands">
+            <div class="text-white">{{ brand }}</div>
+          </div> -->
+      </div>
+
       <!-- Result -->
       <div class="row d-flex justify-content-center">
         <div v-if="loading" class="d-flex justify-content-center position-absolute top-50 left-0">
@@ -96,9 +106,10 @@ export default {
       filterOpen: false,
       sortPrice: false,
       sortBrand: false,
+      info: '',
     };
   },
-  props: ['randomwatches'],
+  props: ['randomwatches', 'extrainfo'],
   methods: {
     async zoekAlternatieven(watch) {
       if (watch != null) {
@@ -106,7 +117,7 @@ export default {
         this.model = watch.model;
       }
 
-      if ((this.brand && this.brand.trim() !== '') && (this.model && this.model.trim() !== '')) {
+      if ((this.brand && this.brand.trim() !== '')) {
         this.isSearching = true;
         this.watches = [];
         this.loading = true;
@@ -119,10 +130,11 @@ export default {
               selected: false,
             }));
             this.original = res.data.original;
+            this.info = res.data.info;
           })
           .catch(err => {
+            console.log(this.err);
             this.error = err.response.data.error;
-            console.log(this.error);
           })
           .finally(_ => {
             this.loading = false;
@@ -146,8 +158,12 @@ export default {
         .then(res => {
           const el = document.getElementById('watch-btn-' + id);
           el.classList.remove('text-secondary');
-          // el.classList.add('text-success');
           el.style.color = 'pink';
+          let curWatch = this.watches.find(watch => watch.id == id);
+          console.log(curWatch);
+          if (curWatch && curWatch.pivot) {
+            curWatch.pivot.link_strength = (parseFloat(curWatch.pivot.link_strength) + 0.1).toString();
+          }
         })
         .catch(err => {
           console.log('Something went wrong during linking watches: ' + JSON.stringify(err.response));
@@ -237,6 +253,11 @@ export default {
     },
     getAlternativesIds() {
       this.watches.filter(a => a.selected).map(b => b.id);
+    },
+    getBrands() {
+      return [
+        ...new Set(this.watches.map(watch => watch.brand))
+      ];
     }
   },
   created() {
@@ -244,6 +265,7 @@ export default {
     setTimeout(() => {
       this.showWatches = true;
     }, 150);
+    this.info = this.extrainfo;
   }
 };
 </script>

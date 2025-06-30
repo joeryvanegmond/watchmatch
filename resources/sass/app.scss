@@ -1,5 +1,9 @@
 @import 'bootstrap/scss/bootstrap';
 
+body {
+  background-color: black;
+}
+
 input {
     // background-color: rgb(239, 239, 239);
     border-radius: 15px;
@@ -28,13 +32,13 @@ button {
 
 @media (min-width: 1200px) {
   .watch-grid {
-      column-count: 4;
+      column-count: 5;
   }
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {
   .watch-grid {
-      column-count: 2;
+      column-count: 3;
   }
 }
 
@@ -46,6 +50,7 @@ button {
 
 .card {
     border-radius: 25px !important;
+    border: 0px !important;
     break-inside: avoid;
     margin-bottom: 1rem;
     background: #fff;

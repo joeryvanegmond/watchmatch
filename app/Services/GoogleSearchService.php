@@ -23,7 +23,7 @@ class GoogleSearchService
         // Controleer op error
         if (isset($response['error'])) {
             if ($response['error']['code'] == 429) {
-                throw new \RuntimeException('Google Search API quota exceeded: ' . $response['error']['message']);
+                throw new \RuntimeException('Google Search API quota exceeded: ' . $response['error']['message'], $response['error']['code']);
             }
             throw new \RuntimeException('Google Search API error: ' . $response['error']['message']);
         }
