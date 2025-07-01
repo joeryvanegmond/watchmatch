@@ -40,7 +40,7 @@ class WatchSimilarityService
                 ],
                 [
                     'image_url' => $imageResult['image'],
-                    'price' => $item->price ?? null,
+                    'price' => $item->price ?? 0,
                     'url' => $this->urlService->create($item->brand, $item->model, $item->variant ?? ''),
                 ]
             );
