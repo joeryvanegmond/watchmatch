@@ -29,20 +29,21 @@ class SearchController extends Controller
 
     public function index()
     {
-        $watches = Watch::inRandomOrder()->limit(20)->get();
-        $info = null;
+        return view('home');
+    }
 
-        foreach ($watches as $watch) {
+    public function getWatches(Request $request) {
+        $curPage = $request->page;
+        $watches = Watch::inRandomOrder()->paginate(50, ['*'], 'page', $curPage);
+
+        $watches->transform(function ($watch) {
             if (is_null($watch->image_url)) {
-                $result = $this->imageService->fetchAndUpdateImage($watch);
-                if ($result['limitExceeded']) {
-                    $info = "Niet alle afbeeldingen zijn beschikbaar.";
-                }
+            $watch->image_url = $this->imageService->getPlaceholder();
             }
-            $watch->setAttribute('image_url', $watch->image_url ?? $this->imageService->getPlaceholder());
-        }
+            return $watch;
+        });
 
-        return view('home', compact('watches', 'info'));
+        return response($watches);
     }
 
     public function search(Request $request)

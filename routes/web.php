@@ -10,3 +10,4 @@ Route::get('/', function () {
 Route::get('/search', [SearchController::class, 'search']);
 Route::post('link', [SearchController::class, 'link']);
 Route::get('/', [SearchController::class, 'index']);
+Route::get('/watches', [SearchController::class, 'getWatches']);

@@ -16,7 +16,7 @@
     <div class="col-2 col-md-1">
 
     </div>
-    <div :class="['col-10', 'ps-4', 'pe-4', 'm-0', 'd-flex', 'flex-column', 'justify-between']">
+    <div :class="['col-10', 'ps-4', 'pe-4', 'm-0', 'd-flex', 'flex-column', 'justify-between']" >
       <div class="col-md-12 d-flex pt-4 pb-4 justify-content-around flex-column flex-sm-row">
         <div class="col col-lg-4 pe-1">
           <!-- <button v-if="!filterOpen" class="h1 me-3" @click="toggleFilterMenu(true)"><i
@@ -53,7 +53,7 @@
         </div>
         <transition-group v-if="showWatches" name="watch-fade" tag="div" class="watch-grid">
           <div class="card watch-card" v-for="(watch, index) in watches" :key="index"
-            :style="{ '--delay': index * 25 + 'ms' }" :id="'watch-' + watch.id">
+            :style="{ '--delay': calculateDelay(index) + 'ms' }" :id="'watch-' + watch.id">
             <img :src="watch.image_url" alt="Watch image" class="watch-card-image" />
             <button
               class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
@@ -98,6 +98,7 @@ export default {
       brand: '',
       model: '',
       watches: [],
+      dupWatches: [],
       loading: false,
       original: {},
       error: '',
@@ -107,10 +108,52 @@ export default {
       sortPrice: false,
       sortBrand: false,
       info: '',
+      hasMore: true,
+      page: 1,
+      lastScrollTop: 0,
     };
   },
   props: ['randomwatches', 'extrainfo'],
+  mounted() {
+    window.addEventListener('scroll', this.handleScroll);
+    this.loadWatches();
+  },
+  beforeDestroy() {
+    window.removeEventListener('scroll', this.handleScroll);
+  },
   methods: {
+    async loadWatches() {
+      if (this.loading || !this.hasMore) return;
+      this.loading = true;
+      axios.get(`/watches?page=${this.page}`)
+        .then(res => {
+          this.watches.push(...res.data.data);
+          this.dupWatches = this.watches;
+          this.hasMore = res.data.current_page < res.data.last_page;
+          this.page++;
+        }).catch(err => {
+          console.error('Error loading watches:', err);
+        }).finally(_ => {
+          this.loading = false;
+          this.showWatches = true;
+        });
+    },
+    handleScroll() {
+    if (!this.isSearching) {
+      const scrollTop = window.scrollY;
+      const scrollHeight = document.documentElement.offsetHeight;
+      const clientHeight = window.innerHeight;
+      const threshold = 150;
+  
+      if (scrollTop > this.lastScrollTop) {
+        if (scrollTop + clientHeight >= scrollHeight - threshold) {
+          this.loadWatches();
+        }
+      }
+  
+      this.lastScrollTop = scrollTop;
+    }
+  },
     async zoekAlternatieven(watch) {
       if (watch != null) {
         this.brand = watch.brand;
@@ -160,7 +203,6 @@ export default {
           el.classList.remove('text-secondary');
           el.style.color = 'pink';
           let curWatch = this.watches.find(watch => watch.id == id);
-          console.log(curWatch);
           if (curWatch && curWatch.pivot) {
             curWatch.pivot.link_strength = (parseFloat(curWatch.pivot.link_strength) + 0.1).toString();
           }
@@ -174,7 +216,7 @@ export default {
       this.isSearching = false;
       this.brand = '';
       this.model = '';
-      this.watches = this.randomwatches;
+      this.watches = this.dupWatches;
       this.showWatches = false;
       setTimeout(() => {
         this.showWatches = true;
@@ -243,6 +285,17 @@ export default {
         this.toggleWatchesVisibilty(false);
       }, 1000);
     },
+    calculateDelay(index) {
+      const rows = 5;
+      const cols = 10;
+
+      // Calculate row and column based on index
+      const row = index % rows;
+      const col = Math.floor(index / rows);
+
+      // Calculate delay based on row and column
+      return (row * cols + col) * 25;
+    }
   },
   computed: {
     hasOriginal() {
@@ -261,10 +314,7 @@ export default {
     }
   },
   created() {
-    this.watches = this.randomwatches;
-    setTimeout(() => {
-      this.showWatches = true;
-    }, 150);
+    // this.watches = this.randomwatches;
     this.info = this.extrainfo;
   }
 };
