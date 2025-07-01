@@ -1,22 +1,9 @@
 <template>
   <div class="row-fluid d-flex m-0">
     <!-- Error messages -->
-    <div class="col-2 col-md-1 position-fixed">
-      <div class="d-flex justify-content-center flex-column mt-4">
 
-        <button class="d-flex justify-content-center align-items-center mb-4 text-white" @click="sortByPrice">
-          <i :class="['h2', 'bi', sortPrice ? 'bi-sort-numeric-down-alt' : 'bi-sort-numeric-up', 'me-2']"></i>
-        </button>
+    <div :class="['col-12', 'ps-4', 'pe-4', 'm-0', 'd-flex', 'flex-column', 'justify-between']">
 
-        <button class="d-flex justify-content-center align-items-center text-white" @click="sortByBrand">
-          <i :class="['h2', 'bi', sortBrand ? 'bi-sort-alpha-up-alt' : 'bi-sort-alpha-down', 'me-2']"></i>
-        </button>
-      </div>
-    </div>
-    <div class="col-2 col-md-1">
-
-    </div>
-    <div :class="['col-10', 'ps-4', 'pe-4', 'm-0', 'd-flex', 'flex-column', 'justify-between']" >
       <div class="col-md-12 d-flex pt-4 pb-4 justify-content-around flex-column flex-sm-row">
         <div class="col col-lg-4 pe-1">
           <!-- <button v-if="!filterOpen" class="h1 me-3" @click="toggleFilterMenu(true)"><i
@@ -38,6 +25,22 @@
         </div>
       </div>
 
+      <div class="d-flex justify-content-center flex-row mt-2 mb-4">
+
+        <div class="d-flex col text-white justify-content-center">
+          <button class="d-flex justify-content-center align-items-center text-white" @click="sortByPrice">
+            <i :class="['h2', 'bi', sortPrice ? 'bi-sort-numeric-down-alt' : 'bi-sort-numeric-up', 'me-2']"></i>
+            <div>Filter op prijs</div>
+          </button>
+        </div>
+
+        <div class="d-flex col text-white justify-content-center">
+          <button class="d-flex justify-content-center align-items-center text-white" @click="sortByBrand">
+            <i :class="['h2', 'bi', sortBrand ? 'bi-sort-alpha-up-alt' : 'bi-sort-alpha-down', 'me-2']"></i>
+            <div>Filter op merk</div>
+          </button>
+        </div>
+      </div>
       <!-- Brands -->
       <div class="row d-flex flex-row">
         <slider :watches="getBrands" :brand="brand"></slider>
@@ -139,21 +142,21 @@ export default {
         });
     },
     handleScroll() {
-    if (!this.isSearching) {
-      const scrollTop = window.scrollY;
-      const scrollHeight = document.documentElement.offsetHeight;
-      const clientHeight = window.innerHeight;
-      const threshold = 150;
-  
-      if (scrollTop > this.lastScrollTop) {
-        if (scrollTop + clientHeight >= scrollHeight - threshold) {
-          this.loadWatches();
+      if (!this.isSearching) {
+        const scrollTop = window.scrollY;
+        const scrollHeight = document.documentElement.offsetHeight;
+        const clientHeight = window.innerHeight;
+        const threshold = 150;
+
+        if (scrollTop > this.lastScrollTop) {
+          if (scrollTop + clientHeight >= scrollHeight - threshold) {
+            this.loadWatches();
+          }
         }
+
+        this.lastScrollTop = scrollTop;
       }
-  
-      this.lastScrollTop = scrollTop;
-    }
-  },
+    },
     async zoekAlternatieven(watch) {
       if (watch != null) {
         this.brand = watch.brand;

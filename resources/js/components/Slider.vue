@@ -1,7 +1,7 @@
 <template>
   <swiper :slides-per-view="4" :modules="modules" :autoplay="{ autoplay: 10, disableOnInteraction: false }"
     class="mySwiper" :breakpoints="{
-      320: { slidesPerView: 3 },
+      320: { slidesPerView: 4 },
       768: { slidesPerView: 7 },
       1000: { slidesPerView: 10 }
     }"
