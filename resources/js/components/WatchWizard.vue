@@ -117,7 +117,7 @@ export default {
         this.model = watch.model;
       }
 
-      if ((this.brand && this.brand.trim() !== '')) {
+      if ((this.brand && this.brand.trim() !== '') && (this.model && this.model.trim() !== '')) {
         this.isSearching = true;
         this.watches = [];
         this.loading = true;
