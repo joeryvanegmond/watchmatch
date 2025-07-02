@@ -44,9 +44,6 @@
       <!-- Brands -->
       <div class="row d-flex flex-row">
         <slider :watches="getBrands" :brand="brand"></slider>
-        <!-- <div class="col" v-for="(brand, index) in getBrands">
-            <div class="text-white">{{ brand }}</div>
-          </div> -->
       </div>
 
       <!-- Result -->
@@ -79,7 +76,6 @@
                 :aria-valuenow="Math.min((watch.pivot ? watch.pivot.link_strength : 0 / 2) * 100, 100)"
                 aria-valuemin="0" aria-valuemax="100">
               </div>
-              <!-- {{ Math.min((watch.pivot.link_strength / 2) * 100, 100).toFixed(0) }}% -->
             </div>
           </div>
         </transition-group>
@@ -289,15 +285,9 @@ export default {
       }, 1000);
     },
     calculateDelay(index) {
-      const rows = 5;
-      const cols = 10;
-
-      // Calculate row and column based on index
-      const row = index % rows;
-      const col = Math.floor(index / rows);
-
-      // Calculate delay based on row and column
-      return (row * cols + col) * 25;
+      const possibleDelays = [50, 150, 250, 350];
+      const randomIndex = Math.floor(Math.random() * possibleDelays.length);
+      return possibleDelays[randomIndex];
     }
   },
   computed: {

@@ -34,7 +34,7 @@ class SearchController extends Controller
 
     public function getWatches(Request $request) {
         $curPage = $request->page;
-        $watches = Watch::inRandomOrder()->paginate(50, ['*'], 'page', $curPage);
+        $watches = Watch::whereNotNull('image_url')->inRandomOrder()->paginate(50, ['*'], 'page', $curPage);
 
         $watches->transform(function ($watch) {
             if (is_null($watch->image_url)) {

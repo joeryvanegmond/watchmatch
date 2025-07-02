@@ -27,7 +27,8 @@ class WatchSimilarityService
         $info = null;
 
         foreach ($results as $item) {
-            $imageResult = $this->imageService->safeSearchImage("{$item->brand} {$item->model}");
+            $variant = $item->variant ?? '';
+            $imageResult = $this->imageService->safeSearchImage("{$item->brand} {$item->model} {$variant}");
             if ($imageResult['limitExceeded']) {
                 $info = "Niet alle afbeeldingen zijn beschikbaar.";
             }
