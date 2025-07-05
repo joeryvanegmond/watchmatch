@@ -6,6 +6,8 @@
 
       <div class="col-md-12 d-flex pt-4 pb-4 justify-content-around flex-column flex-sm-row">
         <div class="col col-lg-4 pe-1">
+          <!-- <button v-if="!filterOpen" class="h1 me-3" @click="toggleFilterMenu(true)"><i
+                class="bi bi-filter-left text-white"></i></button> -->
           <input class="me-sm-4 text-white" type="text" v-model="brand" placeholder="Merk"
             @blur="zoekAlternatieven(null)" required />
         </div>
@@ -49,26 +51,23 @@
         <div v-if="loading" class="d-flex justify-content-center position-absolute top-50 left-0">
           <spinningwheel></spinningwheel>
         </div>
-        <div v-if="showWatches" name="watch-fade" tag="div" class="watch-grid"
-          :style="{ '--viewport-width': viewportWidthMinus30 + 'px' }">
-          <div class="card d-flex flex-row" v-for="(watch, index) in watches" :key="index" :id="'watch-' + watch.id">
-            <div class="col-12">
-              <img :src="watch.image_url" alt="Watch image" class="watch-card-image" />
-              <button
-                class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
-                style="background: rgba(0, 0, 0, 0.4);" @click="zoekAlternatieven(watch)">
-                <div class="d-flex justify-content-between justify-content-start">
-                  <div class="fw-bold ps-3 pt-2 h4 text-start">{{ watch.brand[0].toUpperCase() + watch.brand.slice(1) }}
-                  </div>
+        <transition-group v-if="showWatches" name="watch-fade" tag="div" class="watch-grid">
+          <div class="card watch-card" v-for="(watch, index) in watches" :key="index"
+            :style="{ '--delay': calculateDelay(index) + 'ms' }" :id="'watch-' + watch.id">
+            <img :src="watch.image_url" alt="Watch image" class="watch-card-image" />
+            <button
+              class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
+              style="background: rgba(0, 0, 0, 0.4);" @click="focusToWatch(watch.id)">
+              <div class="d-flex justify-content-between justify-content-start ">
+                <div class="fw-bold ps-3 pt-2 h4 text-start">{{ watch.brand[0].toUpperCase() + watch.brand.slice(1) }}
                 </div>
-                <div class="position-absolute bottom-0 start-0 w-100">
-                  <div class="d-flex justify-content-start ps-4 pb-4 pe-1">
-                    {{ watch.model[0].toUpperCase() + watch.model.slice(1) }}
-                  </div>
+              </div>
+              <div class="position-absolute bottom-0 start-0 w-100">
+                <div class="d-flex justify-content-start ps-4 pb-4 pe-1">
+                  {{ watch.model[0].toUpperCase() + watch.model.slice(1) }}
                 </div>
-              </button>
-            </div>
-
+              </div>
+            </button>
             <button v-if="isSearching" class="btn text-secondary p-2 m-2 position-absolute top-0 end-0"
               :id="'watch-btn-' + watch.id" @click="link(watch.id)"><i class="bi h4 bi-heart-fill"></i></button>
             <div v-if="isSearching" class="progress" style="height: 10px;">
@@ -79,7 +78,7 @@
               </div>
             </div>
           </div>
-        </div>
+        </transition-group>
 
       </div>
     </div>
@@ -111,23 +110,18 @@ export default {
       hasMore: true,
       page: 1,
       lastScrollTop: 0,
-      viewportWidth: window.innerWidth,
     };
   },
   props: ['randomwatches', 'extrainfo'],
   mounted() {
-    window.addEventListener('resize', this.onResize);
     window.addEventListener('scroll', this.handleScroll);
     this.loadWatches();
-  },
-  beforeUnmount() {
-    window.removeEventListener('resize', this.onResize);
   },
   beforeDestroy() {
     window.removeEventListener('scroll', this.handleScroll);
   },
   methods: {
-    loadWatches() {
+    async loadWatches() {
       if (this.loading || !this.hasMore) return;
       this.loading = true;
       axios.get(`/watches?page=${this.page}`)
@@ -136,34 +130,12 @@ export default {
           this.dupWatches = this.watches;
           this.hasMore = res.data.current_page < res.data.last_page;
           this.page++;
-          this.loading = false;
-          this.showWatches = true;
-
-          // wacht tot de DOM is bijgewerkt
-          this.$nextTick(() => {
-            this.setHeight();
-            const items = document.querySelectorAll('.watch-grid .card');
-            items.forEach(item => {
-              const rowHeight = parseInt(getComputedStyle(item).getPropertyValue('--row-height'), 10);
-              if (rowHeight === 0) {
-                item.remove();
-              }
-            });
-          });
         }).catch(err => {
           console.error('Error loading watches:', err);
+        }).finally(_ => {
+          this.loading = false;
+          this.showWatches = true;
         });
-    },
-    setHeight() {
-      const rowHeight = 10;
-      const items = document.querySelectorAll(".card");
-      // console.log(items);
-      items.forEach(item => {
-        const img = item.querySelector("img");
-        const contentHeight = img.getBoundingClientRect().height;
-        const rowSpan = Math.ceil(contentHeight / rowHeight);
-        item.style.setProperty('--row-height', rowSpan);
-      });
     },
     handleScroll() {
       if (!this.isSearching) {
@@ -181,36 +153,33 @@ export default {
         this.lastScrollTop = scrollTop;
       }
     },
-    zoekAlternatieven(watch) {
-      let details = document.querySelector('.watch-details');
-      if (details) details.remove();
-
+    async zoekAlternatieven(watch) {
       if (watch != null) {
         this.brand = watch.brand;
         this.model = watch.model;
       }
+
       if ((this.brand && this.brand.trim() !== '') && (this.model && this.model.trim() !== '')) {
         this.isSearching = true;
         this.watches = [];
         this.loading = true;
+        this.showWatches = false;
 
         axios.get(`/search/?brand=${this.brand}&model=${this.model}`)
           .then(res => {
+            this.watches = res.data.similar.map(watch => ({
+              ...watch,
+              selected: false,
+            }));
             this.original = res.data.original;
-            this.watches = res.data.similar;
-            this.watches.push(this.original);
-            this.loading = false;
-            this.showWatches = true;
+            this.info = res.data.info;
           })
           .catch(err => {
             console.log(this.err);
             this.error = err.response.data.error;
           })
           .finally(_ => {
-            this.$nextTick(() => {
-              this.setHeight();
-              this.focusToWatch(this.original.id);
-            });
+            this.loading = false;
           });
       }
       setTimeout(() => {
@@ -243,84 +212,37 @@ export default {
         .finally(_ => this.loading = false);
     },
     clear() {
-      window.location.href = '/';
+      this.isSearching = false;
+      this.brand = '';
+      this.model = '';
+      this.watches = this.dupWatches;
+      this.showWatches = false;
+      setTimeout(() => {
+        this.showWatches = true;
+      }, 300);
     },
     focusToWatch(id) {
-      let curIndex = this.watches.findIndex(watch => watch.id === id);
-      let curWatch = this.watches[curIndex];
+      let curWatch = null;
 
+      this.watches.forEach(watch => {
 
-
-      const grid = document.querySelector('.watch-grid');
-
-      // Maak een nieuw element
-      const watchDetails = document.createElement('div');
-      watchDetails.classList.add('card', 'pe-4', 'ps-4', 'm-4', 'watch-details');
-      watchDetails.style.backgroundColor = "#000";
-
-      // Brand
-      const watchBrandDiv = document.createElement('div');
-      watchBrandDiv.classList.add('d-flex', 'justify-content-start');
-      const watchbrand = document.createElement('h1');
-      watchbrand.innerHTML = curWatch.brand[0].toUpperCase() + curWatch.brand.slice(1)
-      watchBrandDiv.append(watchbrand);
-
-      // Model
-      const watchModelDiv = document.createElement('div');
-      watchModelDiv.classList.add('d-flex', 'justify-content-start');
-      const watchModel = document.createElement('h3');
-      watchModel.innerHTML = curWatch.model[0].toUpperCase() + curWatch.model.slice(1)
-      watchModelDiv.append(watchModel);
-
-      // Price
-      const watchPriceDiv = document.createElement('div');
-      watchPriceDiv.classList.add('d-flex', 'justify-content-between', 'mt-4');
-      const watchPriceLabel = document.createElement('h5');
-      watchPriceLabel.innerHTML = "Prijs";
-      const watchPriceValue = document.createElement('h5');
-      watchPriceValue.innerHTML = '€ ' + curWatch.price;
-      watchPriceDiv.append(watchPriceLabel, watchPriceValue);
-
-      // Variant
-      const watchVariantDiv = document.createElement('div');
-      watchVariantDiv.classList.add('d-flex', 'justify-content-between', 'mt-4');
-      const watchVariantLabel = document.createElement('h5');
-      watchVariantLabel.innerHTML = "Variant";
-      const watchVariantValue = document.createElement('h5');
-      watchVariantValue.innerHTML = curWatch.variant ? curWatch.variant[0].toUpperCase() + curWatch.variant.slice(1) : "-";
-      watchVariantDiv.append(watchVariantLabel, watchVariantValue);
-
-      watchDetails.append(watchBrandDiv, watchModelDiv, watchPriceDiv, watchVariantDiv);
-
-      if (grid.children.length >= 1) {
-        grid.insertBefore(watchDetails, grid.children[1]);
-      } else {
-        grid.appendChild(watchDetails);
-      }
-
-      const old = document.getElementById('watch-' + id);
-      const curHeight = getComputedStyle(old).getPropertyValue('--row-height');
-
-      const el = document.getElementById('watch-' + this.watches[0].id);
-      const orgHeight = getComputedStyle(el).getPropertyValue('--row-height');
-      // console.log(`replacing ${this.watches[0].id} with height ${orgHeight} for ${id} with height ${curHeight}`);
-      el.id = 'watch-' + id;
-      el.style.gridRowEnd = `span ${curHeight}`;
-
-      this.watches[curIndex] = this.watches[0];
-      this.watches[0] = curWatch;
-
-      old.id = 'watch-' + this.watches[0].id;
-      const colWidth = 3;
-
-      el.style.gridColumn = "span " + colWidth;
-      el.style.gridRow = "span " + curHeight * colWidth;
-
-      watchDetails.style.gridColumn = "span " + (colWidth - 1);
-      watchDetails.style.gridRow = "span " + 30;
-
-      old.style.setProperty('--row-height', orgHeight);
-      el.style.setProperty('--row-height', curHeight);
+        if (watch.id !== id) {
+          const el = document.getElementById('watch-' + watch.id);
+          if (!el) return;
+          el.classList.add('hidden');
+          el.classList.remove('visible');
+        } else {
+          curWatch = watch;
+        }
+      });
+      setTimeout(() => {
+        let curEl = document.getElementById('watch-' + id);
+        curEl.classList.add('hidden');
+        curEl.classList.remove('visible');
+        setTimeout(() => {
+          this.zoekAlternatieven(curWatch);
+        }, 1000);
+      }, 700);
     },
     toggleFilterMenu(state) {
       this.filterOpen = state;
@@ -341,25 +263,31 @@ export default {
     sortByBrand() {
       this.sortBrand = !this.sortBrand;
       this.toggleWatchesVisibilty(true);
-      if (this.sortBrand) {
-        this.watches.sort((a, b) => a.brand.localeCompare(b.brand));
-      } else {
-        this.watches.sort((a, b) => b.brand.localeCompare(a.brand));
-      }
-      this.toggleWatchesVisibilty(false);
+      setTimeout(() => {
+        if (this.sortBrand) {
+          this.watches.sort((a, b) => a.brand.localeCompare(b.brand));
+        } else {
+          this.watches.sort((a, b) => b.brand.localeCompare(a.brand));
+        }
+        this.toggleWatchesVisibilty(false);
+      }, 1000);
     },
     sortByPrice() {
       this.sortPrice = !this.sortPrice;
       this.toggleWatchesVisibilty(true);
-      if (this.sortPrice) {
-        this.watches.sort((a, b) => a.price.localeCompare(b.price ?? 0));
-      } else {
-        this.watches.sort((a, b) => b.price.localeCompare(a.price ?? 0));
-      }
-      this.toggleWatchesVisibilty(false);
+      setTimeout(() => {
+        if (this.sortPrice) {
+          this.watches.sort((a, b) => a.price.localeCompare(b.price ?? 0));
+        } else {
+          this.watches.sort((a, b) => b.price.localeCompare(a.price ?? 0));
+        }
+        this.toggleWatchesVisibilty(false);
+      }, 1000);
     },
-    onResize() {
-      this.viewportWidth = window.innerWidth;
+    calculateDelay(index) {
+      const possibleDelays = [50, 150, 250, 350];
+      const randomIndex = Math.floor(Math.random() * possibleDelays.length);
+      return possibleDelays[randomIndex];
     }
   },
   computed: {
@@ -376,9 +304,6 @@ export default {
       return [
         ...new Set(this.watches.map(watch => watch.brand))
       ];
-    },
-    viewportWidthMinus30() {
-      return this.viewportWidth - 72;
     }
   },
   created() {
