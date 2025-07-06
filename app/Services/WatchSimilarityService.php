@@ -40,11 +40,23 @@ class WatchSimilarityService
                     'variant' => strtolower($item->variant ?? ''),
                 ],
                 [
-                    'image_url' => $imageResult['image'],
                     'price' => $item->price ?? 0,
                     'url' => $this->urlService->create($item->brand, $item->model, $item->variant ?? ''),
                 ]
             );
+
+            if ($watch->wasRecentlyCreated === true) {
+                if ($imageResult['watch'] != null) {
+                    $watch->image_url = $imageResult['watch'];
+                    $watch->save();
+                }
+            } else if($watch->wasRecentlyCreated === false)
+            {
+                if ($watch->image_url == null) {
+                    $watch->image_url = $imageResult['watch'];
+                    $watch->save();
+                }
+            }
 
             $watch->image_url ??= $this->imageService->getPlaceholder();
             $watches->push($watch);
