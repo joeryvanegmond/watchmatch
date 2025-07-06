@@ -44,16 +44,16 @@ class WatchSimilarityService
                     'url' => $this->urlService->create($item->brand, $item->model, $item->variant ?? ''),
                 ]
             );
-
+            
             if ($watch->wasRecentlyCreated === true) {
-                if ($imageResult['watch'] != null) {
-                    $watch->image_url = $imageResult['watch'];
+                if ($imageResult['image'] != null) {
+                    $watch->image_url = $imageResult['image'];
                     $watch->save();
                 }
             } else if($watch->wasRecentlyCreated === false)
             {
                 if ($watch->image_url == null) {
-                    $watch->image_url = $imageResult['watch'];
+                    $watch->image_url = $imageResult['image'];
                     $watch->save();
                 }
             }

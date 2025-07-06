@@ -41,8 +41,10 @@ class JobController extends Controller
         $results = $this->searchService->search($watchToCompare->brand, $watchToCompare->model);
         $result = $this->similarityService->processAndStoreSimilarities($results, $watchToCompare);
 
+        $totalWatches = Watch::all()->count();
+
         // Link results with original watch
-        return response('Added ' . count($result['watches'] ?? []) . ' similarities for ' . $watchToCompare->brand . ' ' . $watchToCompare->model);
+        return response('Added ' . count($result['watches'] ?? []) . ' similarities for ' . $watchToCompare->brand . ' ' . $watchToCompare->model . ' total of ' . $totalWatches . ' watches');
     }
 
     public function imagenator()
@@ -64,7 +66,7 @@ class JobController extends Controller
                 break;
             }
         }
-
-        return response("Updated {$updatedCount} watches with image");
+        $totalImages = Watch::whereNotnull('image_url')->count();
+        return response("Updated {$updatedCount} watches, total of {$totalImages} images");
     }
 }
