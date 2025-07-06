@@ -3,7 +3,9 @@
 
 @include('layouts.head')
 
-<body id="app">
+<body class="p-4" id="app">
+    @include('layouts.navigation')
+
     @yield('content')
 </body>
 <!-- Scripts -->

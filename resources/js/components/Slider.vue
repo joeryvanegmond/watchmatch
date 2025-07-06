@@ -5,10 +5,9 @@
       768: { slidesPerView: 7 },
       1000: { slidesPerView: 10 }
     }"
-    
     :loop="true">
     <swiper-slide v-for="(watch, index) in watches" :key="index">
-      <div class="text-white me-2 ms-2 text-center" @click="brand = watch">{{ watch[0].toUpperCase() + watch.slice(1) }}
+      <div class="text-white me-2 ms-2 text-center">{{ watch[0].toUpperCase() + watch.slice(1) }}
       </div>
     </swiper-slide>
   </swiper>
@@ -31,7 +30,7 @@ export default {
   methods: {
     onChange() {
       this.$emit('update:watches', this.watches);
-      this.$emit('update:brand', this.brand);
+      // this.$emit('update:brand', this.brand);
     }
   }
 };
