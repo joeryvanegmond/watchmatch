@@ -4,6 +4,10 @@ body {
   background-color: black;
 }
 
+.logo {
+  font-family: 'Playfair Display', 'Times New Roman', Times, serif;
+}
+
 input {
   // background-color: rgb(239, 239, 239);
   border-radius: 15px;
@@ -30,13 +34,14 @@ button {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   column-gap: 1rem;
   padding: 1rem;
+  width: 100%;
 }
 
-// @media (min-width: 1200px) {
-//   .watch-grid {
-//       column-count: 5;
-//   }
-// }
+@media (min-width: 1200px) {
+  .watch-grid {  
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+}
 
 // @media (min-width: 768px) and (max-width: 1199px) {
 //   .watch-grid {
@@ -44,11 +49,11 @@ button {
 //   }
 // }
 
-// @media (max-width: 767px) {
-//   .watch-grid {
-//     grid-template-columns: repeat(auto-fill, calc(var(--viewport-width) / 2));
-//   }
-// }
+@media (max-width: 767px) {
+  .watch-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+}
 
 .card {
   --row-height: 1;
