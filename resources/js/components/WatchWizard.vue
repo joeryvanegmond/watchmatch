@@ -5,9 +5,12 @@
     <div class="row d-flex flex-row">
       <slider :watches="getBrands" :brand="brand"></slider>
     </div>
-    
+
     <!-- Result -->
     <div class="row d-flex">
+      <div v-if="loading" class="d-flex justify-content-center mt-4">
+        <spinningwheel></spinningwheel>
+      </div>
       <div tag="div" class="watch-grid" :style="{ '--viewport-width': viewportWidthMinus30 + 'px' }">
         <div class="card" v-for="(watch, index) in watches" :key="index" :id="'watch-' + watch.id">
           <img :src="watch.image_url" alt="Watch image" class="watch-card-image" />
@@ -64,6 +67,7 @@ export default {
     window.addEventListener('scroll', this.handleScroll);
     this.$nextTick(() => {
       this.waitForImages().then(this.setHeight);
+      this.loading = false;
     });
 
   },
@@ -226,6 +230,7 @@ export default {
   },
   created() {
     this.watches = this.randomwatches.data;
+    this.loading = true;
   }
 };
 </script>
