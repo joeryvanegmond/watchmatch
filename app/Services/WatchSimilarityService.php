@@ -27,12 +27,6 @@ class WatchSimilarityService
         $info = null;
 
         foreach ($results as $item) {
-            $variant = $item->variant ?? '';
-            $imageResult = $this->imageService->safeSearchImage("{$item->brand} {$item->model} {$variant}");
-            if ($imageResult['limitExceeded']) {
-                $info = "Niet alle afbeeldingen zijn beschikbaar.";
-            }
-
             $watch = Watch::updateOrCreate(
                 [
                     'brand' => strtolower($item->brand),
@@ -44,23 +38,9 @@ class WatchSimilarityService
                     'url' => $this->urlService->create($item->brand, $item->model, $item->variant ?? ''),
                 ]
             );
-            
-            if ($watch->wasRecentlyCreated === true) {
-                if ($imageResult['image'] != null) {
-                    $watch->image_url = $imageResult['image'];
-                    $watch->save();
-                }
-            } else if($watch->wasRecentlyCreated === false)
-            {
-                if ($watch->image_url == null) {
-                    $watch->image_url = $imageResult['image'];
-                    $watch->save();
-                }
-            }
 
             $watch->image_url ??= $this->imageService->getPlaceholder();
             $watches->push($watch);
-
             $original->similarWatches()->syncWithoutDetaching([$watch->id => ['link_strength' => 0.1]]);
         }
 

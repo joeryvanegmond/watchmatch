@@ -23,7 +23,8 @@ class WatchImageService
         }
 
         try {
-            $image = $this->googleSearch->searchImage("{$watch->brand} {$watch->model}");
+            $variant = $item->variant ?? '';
+            $image = $this->googleSearch->searchImage("{$watch->brand} {$watch->model} {$variant}");
             $watch->image_url = $image;
             $watch->save();
             return ['image' => $image, 'limitExceeded' => false];

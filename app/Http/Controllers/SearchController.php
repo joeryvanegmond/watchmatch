@@ -58,10 +58,10 @@ class SearchController extends Controller
                 'model' => strtolower($model),
             ],
             [
-                'image_url' => $this->imageService->safeSearchImage("{$brand} {$model}")['image'],
                 'url' => $this->urlService->create($brand, $model),
             ]
         );
+        if (!$watchToCompare->image_url) $watchToCompare->image_url = $this->imageService->getPlaceholder();
 
         $existingSimilarities = $this->similarityService->getSimilarWatches($watchToCompare);
 

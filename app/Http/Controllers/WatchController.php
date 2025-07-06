@@ -41,11 +41,11 @@ class WatchController extends Controller
         $watchToCompare = $watch;
         $similarWatches = $watchToCompare->similarWatches()->get();
 
-        if(!$watchToCompare->image_url) $watchToCompare->image_url = $this->imageService->getPlaceholder();
+        if (!$watchToCompare->image_url) $watchToCompare->image_url = $this->imageService->getPlaceholder();
 
         $similarWatches->transform(function ($watch) {
             if (is_null($watch->image_url)) {
-            $watch->image_url = $this->imageService->getPlaceholder();
+                $watch->image_url = $this->imageService->getPlaceholder();
             }
             return $watch;
         });
@@ -53,7 +53,7 @@ class WatchController extends Controller
     }
 
     public function findAndShow(Request $request)
-    {   
+    {
         $brand = $request->get('brand');
         $model = $request->get('model');
 
@@ -67,11 +67,10 @@ class WatchController extends Controller
                 'model' => strtolower($model),
             ],
             [
-                'image_url' => $this->imageService->safeSearchImage("{$brand} {$model}")['image'],
                 'url' => $this->urlService->create($brand, $model),
             ]
         );
-        if(!$watchToCompare->image_url) $watchToCompare->image_url = $this->imageService->getPlaceholder();
+        if (!$watchToCompare->image_url) $watchToCompare->image_url = $this->imageService->getPlaceholder();
 
         return view('watch.show', compact('watchToCompare'));
     }
