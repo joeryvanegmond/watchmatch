@@ -8,7 +8,7 @@
 
     <!-- Result -->
     <div class="row d-flex">
-      <div v-if="loading" class="d-flex justify-content-center mt-4">
+      <div v-if="loading" class="d-flex justify-content-center position-absolute bottom-50">
         <spinningwheel></spinningwheel>
       </div>
       <div tag="div" class="watch-grid" :style="{ '--viewport-width': viewportWidthMinus30 + 'px' }">
@@ -67,7 +67,6 @@ export default {
     window.addEventListener('scroll', this.handleScroll);
     this.$nextTick(() => {
       this.waitForImages().then(this.setHeight);
-      this.loading = false;
     });
 
   },
@@ -114,6 +113,7 @@ export default {
         const rowSpan = Math.ceil(contentHeight / rowHeight);
         item.style.setProperty('--row-height', rowSpan);
       });
+      this.loading = false;
     },
     waitForImages() {
       const images = Array.from(document.querySelectorAll(".card img"));
