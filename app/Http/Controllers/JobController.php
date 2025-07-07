@@ -56,9 +56,8 @@ class JobController extends Controller
         
         $limitExceeded = false;
         $updatedCount = 0;
-
         foreach ($watchesWithoutImage as $watch) {
-            $limitExceeded = $this->imageService->fetchAndUpdateImage($watch)['limitExceeded'];
+            $limitExceeded = $this->imageService->fetchAndUpdateImage($watch);
             
             if (!$limitExceeded) {
                 $updatedCount++;
