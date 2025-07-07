@@ -49,23 +49,13 @@ class JobController extends Controller
 
     public function imagenator()
     {
+        $totalImagesBefore = Watch::whereNotnull('image_url')->count();
+
         $watchesWithoutImage = Watch::whereNull('image_url')
         ->orderBy('created_at', 'asc')
-        ->take(1)
-        ->get();
-        
-        $limitExceeded = false;
-        $updatedCount = 0;
-        foreach ($watchesWithoutImage as $watch) {
-            $limitExceeded = $this->imageService->fetchAndUpdateImage($watch);
-            
-            if (!$limitExceeded) {
-                $updatedCount++;
-            } else {
-                break;
-            }
-        }
+        ->first();
+        $this->imageService->fetchAndUpdateImage($watchesWithoutImage);
         $totalImages = Watch::whereNotnull('image_url')->count();
-        return response("Updated {$updatedCount} watches, total of {$totalImages} images");
+        return response("Generated image for {$watchesWithoutImage->brand} {$watchesWithoutImage->model} {$watchesWithoutImage->variant}. Before: {$totalImagesBefore}, After: {$totalImages}");
     }
 }
