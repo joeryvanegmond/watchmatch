@@ -18,7 +18,7 @@
             class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
             style="background: rgba(0, 0, 0, 0.4);" @click="zoekAlternatieven(watch)">
             <div class="d-flex justify-content-between justify-content-start">
-              <div class="fw-bold ps-3 pt-2 h4 text-start">{{ watch.brand[0].toUpperCase() + watch.brand.slice(1) }}
+              <div class="fw-bold ps-3 pt-2 h4 text-start head">{{ watch.brand[0].toUpperCase() + watch.brand.slice(1) }}
               </div>
             </div>
             <div class="position-absolute bottom-0 start-0 w-100">
@@ -61,7 +61,7 @@ export default {
       viewportWidth: window.innerWidth,
     };
   },
-  props: ['randomwatches'],
+  props: ['randomwatches', 'filter'],
   mounted() {
     window.addEventListener('resize', this.onResize);
     window.addEventListener('scroll', this.handleScroll);
@@ -81,7 +81,7 @@ export default {
     loadWatches() {
       if (this.loading || !this.hasMore) return;
       this.loading = true;
-      axios.get(`/watches?page=${this.page}`)
+      axios.get(`/watches?brand=${this.filter ?? ''}&page=${this.page}`)
         .then(res => {
           this.watches.push(...res.data.data);
           this.dupWatches = this.watches;

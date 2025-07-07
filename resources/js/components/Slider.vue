@@ -7,7 +7,7 @@
     }"
     :loop="true">
     <swiper-slide v-for="(watch, index) in watches" :key="index">
-      <div class="text-white me-2 ms-2 text-center">{{ watch[0].toUpperCase() + watch.slice(1) }}
+      <div class="text-white me-2 ms-2 text-center cursor-pointer head" @click="filterbrand(watch)">{{ watch[0].toUpperCase() + watch.slice(1) }}
       </div>
     </swiper-slide>
   </swiper>
@@ -30,7 +30,10 @@ export default {
   methods: {
     onChange() {
       this.$emit('update:watches', this.watches);
-      // this.$emit('update:brand', this.brand);
+    },
+    filterbrand(brand)
+    {
+      window.location.href = `?brand=${brand}`;
     }
   }
 };

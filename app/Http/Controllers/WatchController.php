@@ -29,11 +29,21 @@ class WatchController extends Controller
     }
 
 
-    public function index()
+    public function index(Request $request)
     {
-        $watches = json_encode(Watch::whereNotNull('image_url')->inRandomOrder()->paginate(30, ['*'], 'page', 1));
-
-        return view('watch.index', compact('watches'));
+        $filter = $request->brand;
+        $query = Watch::whereNotNull('image_url');
+        
+        if ($filter) {
+            $query->where('brand', $filter);
+        }
+        
+        $watches = json_encode(
+            $query->inRandomOrder()
+            ->paginate(30, ['*'], 'page', 1)
+        );
+        
+        return view('watch.index', compact('watches', 'filter'));
     }
 
     public function show(Watch $watch)
