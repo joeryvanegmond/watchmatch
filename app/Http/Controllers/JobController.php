@@ -51,7 +51,7 @@ class JobController extends Controller
     {
         $watchesWithoutImage = Watch::whereNull('image_url')
         ->orderBy('created_at', 'asc')
-        ->take(10)
+        ->take(1)
         ->get();
         
         $limitExceeded = false;
