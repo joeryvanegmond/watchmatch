@@ -8,10 +8,10 @@
 
     <!-- Result -->
     <div class="row d-flex justify-content-center">
+      <div v-if="loading" class="d-flex justify-content-center position-absolute bottom-50">
+        <spinningwheel></spinningwheel>
+      </div>
       <div class="col-md-10">
-        <div v-if="loading" class="d-flex justify-content-center position-absolute bottom-50">
-          <spinningwheel></spinningwheel>
-        </div>
         <div tag="div" class="watch-grid" :style="{ '--viewport-width': viewportWidthMinus30 + 'px' }">
           <div class="card" v-for="(watch, index) in watches" :key="index" :id="'watch-' + watch.id">
             <img :src="watch.image_url" alt="Watch image" class="watch-card-image" loading="lazy" />
