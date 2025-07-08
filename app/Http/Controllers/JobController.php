@@ -65,6 +65,7 @@ class JobController extends Controller
         }
 
         $totalImages = Watch::whereNotnull('image_url')->count();
-        return response("Generated image(s), before: {$totalImagesBefore}, after: {$totalImages}");
+        $added = $totalImages - $totalImagesBefore;
+        return response("Generated image(s): {$added}, total: {$totalImages}");
     }
 }
