@@ -76,7 +76,7 @@ class JobController extends Controller
     public function imagekit() {
         $query = Watch::where('image_url', 'not like', '%ik.imagekit.io%');
         $watchesToGo = $query->count();
-        $watches = $query->take(5)->get();
+        $watches = $query->take(2)->get();
 
         $count = 0;
         foreach ($watches as $key => $watch) {
@@ -89,7 +89,7 @@ class JobController extends Controller
                 $watch->save();
             }
 
-            usleep(750000);
+            sleep(1);
         }
         $watchesToGo = $watchesToGo - $count;
         return response("Uploaded to imagekit: {$count}, to go: {$watchesToGo}");
