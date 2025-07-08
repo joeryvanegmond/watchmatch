@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Watch;
+use App\Services\ImagekitService;
 use App\Services\SerpApiService;
 use App\Services\WatchImageService;
 use App\Services\WatchSimilarityService;
@@ -13,16 +14,18 @@ class JobController extends Controller
     private WatchSimilarityService $similarityService;
     private WatchImageService $imageService;
     private SerpApiService $searchService;
-
+    private ImagekitService $imageKitService;
 
     public function __construct(
         SerpApiService $searchService,
         WatchImageService $imageService,
-        WatchSimilarityService $similarityService
+        WatchSimilarityService $similarityService,
+        ImagekitService $imageKitService
     ) {
         $this->imageService = $imageService;
         $this->similarityService = $similarityService;
         $this->searchService = $searchService;
+        $this->imageKitService = $imageKitService;
     }
 
 
@@ -67,5 +70,28 @@ class JobController extends Controller
         $totalImages = Watch::whereNotnull('image_url')->count();
         $added = $totalImages - $totalImagesBefore;
         return response("Generated image(s): {$added}, total: {$totalImages}");
+    }
+
+
+    public function imagekit() {
+        $query = Watch::where('image_url', 'not like', '%ik.imagekit.io%');
+        $watchesToGo = $query->count();
+        $watches = $query->take(5)->get();
+
+        $count = 0;
+        foreach ($watches as $key => $watch) {
+            $url = $this->imageKitService->uploadFromUrl($watch->image_url, "{$watch->brand}_{$watch->model}_{$watch->id}");
+    
+            if ($url) {
+                $count++;
+                $watch->url = $watch->image_url;
+                $watch->image_url = $url;
+                $watch->save();
+            }
+
+            usleep(750000);
+        }
+        $watchesToGo = $watchesToGo - $count;
+        return response("Uploaded to imagekit: {$count}, to go: {$watchesToGo}");
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Watch;
+use App\Services\ImagekitService;
 use App\Services\SerpApiService;
 use App\Services\WatchImageService;
 use App\Services\WatchSimilarityService;
@@ -11,21 +12,15 @@ use Illuminate\Http\Request;
 
 class WatchController extends Controller
 {
-    private SerpApiService $searchService;
     private WatchImageService $imageService;
     private WatchUrlService $urlService;
-    private WatchSimilarityService $similarityService;
 
     public function __construct(
-        SerpApiService $searchService,
         WatchImageService $imageService,
         WatchUrlService $urlService,
-        WatchSimilarityService $similarityService
     ) {
-        $this->searchService = $searchService;
         $this->imageService = $imageService;
         $this->urlService = $urlService;
-        $this->similarityService = $similarityService;
     }
 
 

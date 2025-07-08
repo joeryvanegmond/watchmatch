@@ -10,4 +10,5 @@
 </body>
 <!-- Scripts -->
 @yield('javascript')
+
 </html>
