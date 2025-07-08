@@ -66,7 +66,8 @@ export default {
     window.addEventListener('resize', this.onResize);
     window.addEventListener('scroll', this.handleScroll);
     this.$nextTick(() => {
-      this.waitForImages().then(this.setHeight);
+      this.setHeight();
+      // this.waitForImages().then(this.setHeight);
     });
 
   },
