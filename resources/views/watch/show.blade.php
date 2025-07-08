@@ -6,7 +6,7 @@
 <div class="row text-white d-flex justify-content-center">
     <div class="col-md-10 d-flex flex-column flex-md-row justify-content-center mb-4">
         <div class="d-flex justify-content-center">
-            <div class="card col-7 col-md-8">
+            <div class="card col-10 col-md-8">
                 <img class="watch-card-image" src="{{$watchToCompare->image_url}}" alt="">
             </div>
         </div>
