@@ -6,6 +6,7 @@ use App\Models\Watch;
 use App\Services\SerpApiService;
 use App\Services\WatchImageService;
 use App\Services\WatchSimilarityService;
+use Illuminate\Http\Request;
 
 class JobController extends Controller
 {
@@ -47,15 +48,23 @@ class JobController extends Controller
         return response('Added ' . count($result['watches'] ?? []) . ' similarities for ' . $watchToCompare->brand . ' ' . $watchToCompare->model . ' total of ' . $totalWatches . ' watches');
     }
 
-    public function imagenator()
+    public function imagenator(Request $request)
     {
+        $amount = $request->input('imagesPerRequest', 1);
         $totalImagesBefore = Watch::whereNotnull('image_url')->count();
-
+        
         $watchesWithoutImage = Watch::whereNull('image_url')
         ->orderBy('created_at', 'asc')
-        ->first();
-        $this->imageService->fetchAndUpdateImage($watchesWithoutImage);
+        ->take($amount)
+        ->get();
+
+        foreach ($watchesWithoutImage as $key => $watch) {
+            $this->imageService->fetchAndUpdateImage($watch);
+
+            if ($amount > 1) sleep(1);
+        }
+
         $totalImages = Watch::whereNotnull('image_url')->count();
-        return response("Generated image for {$watchesWithoutImage->brand} {$watchesWithoutImage->model} {$watchesWithoutImage->variant}. Before: {$totalImagesBefore}, After: {$totalImages}");
+        return response("Generated image(s), before: {$totalImagesBefore}, after: {$totalImages}");
     }
 }
