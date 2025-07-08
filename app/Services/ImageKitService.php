@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use ImageKit\ImageKit;
 use Illuminate\Support\Str;
 
-class ImagekitService
+class ImageKitService
 {
     protected ImageKit $imageKit;
 
