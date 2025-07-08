@@ -7,26 +7,29 @@
     </div>
 
     <!-- Result -->
-    <div class="row d-flex">
-      <div v-if="loading" class="d-flex justify-content-center position-absolute bottom-50">
-        <spinningwheel></spinningwheel>
-      </div>
-      <div tag="div" class="watch-grid" :style="{ '--viewport-width': viewportWidthMinus30 + 'px' }">
-        <div class="card" v-for="(watch, index) in watches" :key="index" :id="'watch-' + watch.id">
-          <img :src="watch.image_url" alt="Watch image" class="watch-card-image" loading="lazy" />
-          <button
-            class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
-            style="background: rgba(0, 0, 0, 0.4);" @click="zoekAlternatieven(watch)">
-            <div class="d-flex justify-content-between justify-content-start">
-              <div class="fw-bold ps-3 pt-2 h4 text-start head">{{ watch.brand[0].toUpperCase() + watch.brand.slice(1) }}
+    <div class="row d-flex justify-content-center">
+      <div class="col-md-10">
+        <div v-if="loading" class="d-flex justify-content-center position-absolute bottom-50">
+          <spinningwheel></spinningwheel>
+        </div>
+        <div tag="div" class="watch-grid" :style="{ '--viewport-width': viewportWidthMinus30 + 'px' }">
+          <div class="card" v-for="(watch, index) in watches" :key="index" :id="'watch-' + watch.id">
+            <img :src="watch.image_url" alt="Watch image" class="watch-card-image" loading="lazy" />
+            <button
+              class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
+              style="background: rgba(0, 0, 0, 0.4);" @click="zoekAlternatieven(watch)">
+              <div class="d-flex justify-content-between justify-content-start">
+                <div class="fw-bold ps-3 pt-2 h4 text-start head">{{ watch.brand[0].toUpperCase() + watch.brand.slice(1)
+                  }}
+                </div>
               </div>
-            </div>
-            <div class="position-absolute bottom-0 start-0 w-100">
-              <div class="d-flex justify-content-start ps-4 pb-4 pe-1">
-                {{ watch.model[0].toUpperCase() + watch.model.slice(1) }}
+              <div class="position-absolute bottom-0 start-0 w-100">
+                <div class="d-flex justify-content-start ps-4 pb-4 pe-1">
+                  {{ watch.model[0].toUpperCase() + watch.model.slice(1) }}
+                </div>
               </div>
-            </div>
-          </button>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -66,8 +69,9 @@ export default {
     window.addEventListener('resize', this.onResize);
     window.addEventListener('scroll', this.handleScroll);
     this.$nextTick(() => {
-      this.setHeight();
-      // this.waitForImages().then(this.setHeight);
+      this.waitForImages().then(_ => {
+        this.setHeight();
+      });
     });
 
   },
@@ -108,11 +112,13 @@ export default {
     setHeight() {
       const rowHeight = 10;
       const items = document.querySelectorAll(".card");
-      items.forEach(item => {
+      items.forEach((item, index) => {
         const img = item.querySelector("img");
+        if ((index + 1) % 8 === 0) item.style.gridColumn = 'span 2';
         const contentHeight = img.getBoundingClientRect().height;
         const rowSpan = Math.ceil(contentHeight / rowHeight);
         item.style.setProperty('--row-height', rowSpan);
+        if ((index + 1) % 11 === 0) item.style.gridRow = 'span ' + parseInt(rowSpan);
       });
       this.loading = false;
     },

@@ -5,12 +5,12 @@
 </div>
 <div class="row text-white d-flex justify-content-center">
     <div class="col-md-10 d-flex flex-column flex-md-row justify-content-center mb-4">
-        <div class="col-md-4">
-            <div class="card">
+        <div class="d-flex justify-content-center">
+            <div class="card col-7 col-md-8">
                 <img class="watch-card-image" src="{{$watchToCompare->image_url}}" alt="">
             </div>
         </div>
-        <div class="col-md-6 p-2 m-4">
+        <div class="col-lg-4 col-md-6 p-2 m-4">
             <h1 class="logo">{{ucfirst($watchToCompare->brand)}}</h1>
             <p>{{ucfirst($watchToCompare->model)}}</p>
 
@@ -25,8 +25,10 @@
         </div>
     </div>
 </div>
-<div class="row-fluid text-white text-center">
-    <h5>Vergelijkbare horloges</h5>
-    <similarities :original="{{$watchToCompare}}"></similarities>
+<div class="row-fluid text-white text-center d-flex justify-content-center">
+    <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+        <h5>Vergelijkbare horloges</h5>
+        <similarities :original="{{$watchToCompare}}"></similarities>
+    </div>
 </div>
 @endsection

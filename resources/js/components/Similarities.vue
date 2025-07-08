@@ -81,11 +81,13 @@ export default {
         setHeight() {
             const rowHeight = 10;
             const items = document.querySelectorAll(".card");
-            items.forEach(item => {
+            items.forEach((item, index) => {
                 const img = item.querySelector("img");
+                if ((index + 1) % 6 === 0) item.style.gridColumn = 'span 2';
                 const contentHeight = img.getBoundingClientRect().height;
                 const rowSpan = Math.ceil(contentHeight / rowHeight);
                 item.style.setProperty('--row-height', rowSpan);
+                if ((index + 1) % 11 === 0) item.style.gridRow = 'span ' + parseInt(rowSpan);
             });
         },
         waitForImages() {
