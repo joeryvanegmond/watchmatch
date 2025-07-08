@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Watch;
-use App\Services\ImagekitService;
+use App\Services\ImageKitService;
 use App\Services\SerpApiService;
 use App\Services\WatchImageService;
 use App\Services\WatchSimilarityService;
@@ -14,13 +14,13 @@ class JobController extends Controller
     private WatchSimilarityService $similarityService;
     private WatchImageService $imageService;
     private SerpApiService $searchService;
-    private ImagekitService $imageKitService;
+    private ImageKitService $imageKitService;
 
     public function __construct(
         SerpApiService $searchService,
         WatchImageService $imageService,
         WatchSimilarityService $similarityService,
-        ImagekitService $imageKitService
+        ImageKitService $imageKitService
     ) {
         $this->imageService = $imageService;
         $this->similarityService = $similarityService;
