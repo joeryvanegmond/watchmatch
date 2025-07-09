@@ -25,7 +25,7 @@ class ImageKitService
     {
         try {
             $url = $watch->image_url;
-            $response = Http::withHeaders($this->getRandomHeaders())->get($this->cleanUrl($url));
+            $response = Http::withHeaders($this->getRandomHeaders())->timeout(30)->get($this->cleanUrl($url));
             if (!$response->ok()) {
                 throw new \Exception("Statuscode: {$response->status()} Kan afbeelding niet downloaden: " . $url);
             }
