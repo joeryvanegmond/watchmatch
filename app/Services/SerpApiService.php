@@ -16,11 +16,12 @@ class SerpApiService
 
     public function search(string $brand, string $model): array
     {
-            $response = OpenAI::chat()->create([
+        $response = OpenAI::chat()->create([
             'model' => 'gpt-4.1-nano',
             'messages' => [
-                ['role' => 'assistant',
-                 'content' => $this->CreatePrompt($brand, $model),
+                [
+                    'role' => 'assistant',
+                    'content' => $this->CreateSearchPrompt($brand, $model),
                 ]
             ]
         ]);
@@ -30,9 +31,24 @@ class SerpApiService
         return $watches ?? [];
     }
 
+    public function isGarbage(string $brand, string $model)
+    {
+        $response = OpenAI::chat()->create([
+            'model' => 'gpt-4.1-nano',
+            'messages' => [
+                [
+                    'role' => 'assistant',
+                    'content' => $this->CreateIsGarbagePrompt($brand, $model),
+                ]
+            ]
+        ]);
+        $rawContent = $rawContent = $response->choices[0]->message->content;
+        $result = json_decode($rawContent);
+        return $result->is_watch;
+    }
 
 
-    public function CreatePrompt(string $brand, string $model)
+    private function CreateSearchPrompt(string $brand, string $model)
     {
         return <<<EOT
         Je krijgt van mij een horlogemerk en model. 
@@ -73,5 +89,51 @@ class SerpApiService
 
         Nogmaals, het is echt van belang dat de alternatieve horloges die je me geeft ECHT de zelfde stijl, zelfde vorm en kleur moeten hebben.
         EOT;
+    }
+
+    private function CreateIsGarbagePrompt($brand, $model)
+    {
+        return <<<TEXT
+        Je bent een API die bepaalt of een gegeven merk en model een horloge is.
+
+        Beantwoord uitsluitend met precies één van deze twee JSON-antwoorden:
+        { "is_watch": true }
+
+        of
+
+        { "is_watch": false }
+        Gebruik alleen true als zowel het merk als het model samen bekend en bevestigd zijn als een bestaand horloge.
+        Als het merk wél bestaat als horlogemerk, maar het opgegeven model niet bestaat of niet bij dat merk hoort, dan is het antwoord altijd:
+        { "is_watch": false }
+        Als het merk onbekend is, of het model onbekend is, of als merk en model niet bij elkaar horen, geef dan ook:
+        { "is_watch": false }
+        Als het model-woord lijkt op een horlogenaam, maar het in werkelijkheid geen bestaand horlogemodel is (bijvoorbeeld een woord dat toevallig lijkt maar het niet is), moet het ook worden afgekeurd met { "is_watch": false }.
+        Antwoord nooit true als je niet met zekerheid kunt zeggen dat het een bestaand horloge betreft met dat merk en model.
+        Voorbeeld:
+
+        Merk: "Tissot"
+        Model: "PRX 100"
+        Antwoord:
+        { "is_watch": true }
+        
+        Merk: "Tissot"
+        Model: "PRX 1000" (lijkt erop maar bestaat niet)
+        Antwoord:
+        { "is_watch": false }
+
+        Merk: "aquis"
+        Model: "etad" (lijkt echt, bestaat niet)
+        Antwoord:
+        { "is_watch": false }
+
+        Merk: "mido"
+        Model: "forest circle" (lijkt echt, bestaat niet)
+        Antwoord:
+        { "is_watch": false }
+        
+        Beantwoord nu:
+        Merk: "{$brand}"
+        Model: "{$model}"
+        TEXT;
     }
 }
