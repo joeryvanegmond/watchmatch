@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Models\BlacklistedDomain;
 use App\Models\Watch;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Facades\Image;
 use ImageKit\ImageKit;
 use Illuminate\Support\Str;
+use Intervention\Image\ImageManager;
 
 class ImageKitService
 {
@@ -25,10 +28,6 @@ class ImageKitService
     {
         try {
             $url = $this->cleanUrl($watch->image_url);
-            $response = Http::withHeaders($this->getRandomHeaders($watch->image_url))->timeout(30)->get($url);
-            if (!$response->ok()) {
-                throw new \Exception("Statuscode: {$response->status()} Kan afbeelding niet downloaden: " . $url . ' ' . $response->headers());
-            }
 
             // Map van MIME types naar extensies
             $mimeToExt = [
@@ -36,36 +35,76 @@ class ImageKitService
                 'image/png' => 'png',
                 'image/gif' => 'gif',
                 'image/webp' => 'webp',
-                // voeg hier eventueel meer toe
+                // evt. uitbreiden
             ];
 
-            // Pak content-type header
-            $contentType = $response->header('Content-Type');
-            $ext = $mimeToExt[$contentType] ?? 'jpg'; // fallback naar jpg
+            // Zorg dat de temp folder bestaat
+            $tempDir = storage_path('app/temp');
+            if (!file_exists($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
 
-            // Bouw bestandsnaam als die niet meegegeven is
+            // Als geen filename is gegeven, probeer een extensie te bepalen via URL
+            // Let op: copy() downloadt de file, maar geeft geen headers terug,
+            // dus content-type weten we niet direct. We kunnen dat achteraf ophalen met mime_content_type.
             if (!$fileName) {
+                // probeer extensie uit url te halen (fallback)
+                $pathInfo = pathinfo(parse_url($url, PHP_URL_PATH));
+                $ext = $pathInfo['extension'] ?? 'jpg';
                 $fileName = Str::random(20) . '.' . $ext;
             } else {
-                // Check of fileName al extensie heeft, zo niet: toevoegen
                 if (!str_contains($fileName, '.')) {
-                    $fileName .= '.' . $ext;
+                    $fileName .= '.jpg'; // fallback extensie
                 }
             }
 
-            $tempPath = storage_path("app/temp/{$fileName}");
+            $tempPath = $tempDir . DIRECTORY_SEPARATOR . $fileName;
 
-            // Zorg dat de folder bestaat
-            if (!file_exists(dirname($tempPath))) {
-                mkdir(dirname($tempPath), 0755, true);
+            // Download bestand lokaal
+            if (!copy($url, $tempPath)) {
+                throw new \Exception("Kon afbeelding niet downloaden via copy() van $url");
             }
 
-            file_put_contents($tempPath, $response->body());
+            // === Intervention Image Manager aanmaken ===
+            $manager = ImageManager::gd();
+
+            // Afbeelding laden
+            $img = $manager->read($tempPath);
+
+            $percentage = 25;
+            $width = $img->width();
+            $height = $img->height();
+
+            $newWidth = intval($width * ($percentage / 100));
+            $newHeight = intval($height * ($percentage / 100));
+
+            if ($newHeight >= 2000 && $newHeight >= 2000) {
+                $img->resize($newWidth, $newHeight, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+            }
+
+            // Opslaan met compressie (kwaliteit 75%)
+            $img->save($tempPath, 75);
+
+            // Probeer mime-type lokaal te bepalen en eventueel extensie corrigeren
+            $detectedMime = mime_content_type($tempPath);
+            if (isset($mimeToExt[$detectedMime])) {
+                $correctExt = $mimeToExt[$detectedMime];
+                // Check of file extension klopt, anders rename bestand
+                if (pathinfo($tempPath, PATHINFO_EXTENSION) !== $correctExt) {
+                    $newTempPath = $tempDir . DIRECTORY_SEPARATOR . pathinfo($fileName, PATHINFO_FILENAME) . '.' . $correctExt;
+                    rename($tempPath, $newTempPath);
+                    $tempPath = $newTempPath;
+                    $fileName = basename($newTempPath);
+                }
+            }
 
             $upload = $this->imageKit->upload([
                 'file' => fopen($tempPath, 'r'),
                 'fileName' => "watchmatch_{$fileName}",
-                'folder' => 'watches'
+                'folder' => config('services.imagekit.folder'),
             ]);
 
             // Verwijder tijdelijk bestand
@@ -74,6 +113,7 @@ class ImageKitService
             return $upload->result->url ?? null;
         } catch (\Throwable $e) {
             logger()->error("ImageKit upload error: " . $e->getMessage());
+            $this->addDomainToBlacklist($url);
             $watch->image_url = null;
             $watch->save();
             return null;
@@ -113,5 +153,13 @@ class ImageKitService
             'Accept-Encoding' => 'gzip, deflate, br',
             'Connection' => 'keep-alive'
         ];
+    }
+
+    function addDomainToBlacklist(string $imageUrl)
+    {
+        $host = parse_url($imageUrl, PHP_URL_HOST);
+        if ($host && !BlacklistedDomain::where('domain', $host)->exists()) {
+            BlacklistedDomain::create(['domain' => $host]);
+        }
     }
 }

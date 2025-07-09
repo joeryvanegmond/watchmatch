@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\BlacklistedDomain;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 
@@ -20,9 +21,10 @@ class DuckDuckGoService
             'q' => $query,
             'vqd' => $vqd
         ])->json();
+        $image_url = $this->getAllowedImageUrl($response);
 
         return [
-            'image' => $response['results'][0]['image'] ?? null,
+            'image' => $this->cleanUrl($image_url),
             'url' => $response['results'][0]['url'] ?? null
         ];
     }
@@ -68,5 +70,36 @@ class DuckDuckGoService
             'User-Agent' => $userAgents[array_rand($userAgents)],
             'Referer' => $referers[array_rand($referers)],
         ];
+    }
+
+    public function getAllowedImageUrl(array $response): ?string
+    {
+        if (!isset($response['results']) || !is_array($response['results'])) {
+            return null;
+        }
+
+        // Alle blacklisted domains ophalen (kan je cachen)
+        $blacklistedDomains = BlacklistedDomain::pluck('domain')->toArray();
+
+        foreach ($response['results'] as $result) {
+            if (!isset($result['image'])) {
+                continue;
+            }
+
+            $imageUrl = $result['image'];
+            $host = parse_url($imageUrl, PHP_URL_HOST);
+
+            if ($host && !in_array($host, $blacklistedDomains)) {
+                return $imageUrl;
+            }
+        }
+
+        return null; // Geen bruikbare url gevonden
+    }
+
+    private function cleanUrl(string $url): string
+    {
+        $parts = parse_url($url);
+        return $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
     }
 }
