@@ -94,4 +94,21 @@ class JobController extends Controller
         $watchesToGo = $watchesToGo - $count;
         return response("Uploaded to imagekit: {$count}, to go: {$watchesToGo}");
     }
+
+
+    public function garbageCleaner()
+    {
+        $watch = Watch::where('legit', false)->first();
+
+        $isGarbage = $this->searchService->isGarbage($watch->brand, $watch->model);
+
+        if (!$isGarbage) {
+            $watch->delete();
+            return response("Removed {$watch->brand} {$watch->model}");
+        } else {
+            $watch->legit = true;
+            $watch->save();
+            return response("Checked {$watch->brand} {$watch->model}, LEGIT");
+        }
+    }
 }
