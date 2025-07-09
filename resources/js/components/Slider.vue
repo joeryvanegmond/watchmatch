@@ -33,7 +33,7 @@ export default {
     },
     filterbrand(brand)
     {
-      window.location.href = `?brand=${brand}`;
+      window.location.href = `/?brand=${brand}`;
     }
   }
 };
