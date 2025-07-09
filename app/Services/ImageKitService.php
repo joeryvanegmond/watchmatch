@@ -104,6 +104,8 @@ class ImageKitService
                 'file' => fopen($tempPath, 'r'),
                 'fileName' => "watchmatch_{$fileName}",
                 'folder' => config('services.imagekit.folder'),
+                'useUniqueFileName' => false,
+                'overwriteFile' => true,
             ]);
 
             // Verwijder tijdelijk bestand
