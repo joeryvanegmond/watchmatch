@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Watch;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Storage;
 use ImageKit\ImageKit;
@@ -20,12 +21,13 @@ class ImageKitService
         );
     }
 
-    public function uploadFromUrl(string $url, ?string $fileName = null): ?string
+    public function uploadFromUrl(Watch $watch, ?string $fileName = null): ?string
     {
         try {
-            $response = Http::get($this->cleanUrl($url));
+            $url = $watch->image_url;
+            $response = Http::withHeaders($this->getRandomHeaders())->get($this->cleanUrl($url));
             if (!$response->ok()) {
-                throw new \Exception('Kan afbeelding niet downloaden: ' . $url);
+                throw new \Exception("Statuscode: {$response->status()} Kan afbeelding niet downloaden: " . $url);
             }
 
             // Map van MIME types naar extensies
@@ -72,14 +74,45 @@ class ImageKitService
             return $upload->result->url ?? null;
         } catch (\Throwable $e) {
             logger()->error("ImageKit upload error: " . $e->getMessage());
+            $watch->image_url = null;
+            $watch->save();
             return null;
         }
     }
 
 
-    function cleanUrl(string $url): string
+    private function cleanUrl(string $url): string
     {
         $parts = parse_url($url);
         return $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
+    }
+
+    private function getRandomHeaders(): array
+    {
+        $userAgents = [
+            // Chrome op Windows
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
+            // Firefox op Windows
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101 Firefox/102.0',
+            // Safari op macOS
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15',
+            // Chrome op Android
+            'Mozilla/5.0 (Linux; Android 11; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Mobile Safari/537.36',
+            // Safari op iPhone
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
+        ];
+
+        $referers = [
+            'https://duckduckgo.com/',
+            'https://www.google.com/',
+            'https://www.bing.com/',
+            'https://search.yahoo.com/',
+            'https://www.ecosia.org/'
+        ];
+
+        return [
+            'User-Agent' => $userAgents[array_rand($userAgents)],
+            'Referer' => $referers[array_rand($referers)],
+        ];
     }
 }

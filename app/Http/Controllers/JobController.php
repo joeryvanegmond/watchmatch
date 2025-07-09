@@ -73,14 +73,14 @@ class JobController extends Controller
     }
 
 
-    public function imagekit() {
+    public function imagekit(Request $request) {
+        $amount = $request->input('imagesPerRequest', 1);
         $query = Watch::where('image_url', 'not like', '%ik.imagekit.io%');
         $watchesToGo = $query->count();
-        $watches = $query->take(2)->get();
-
+        $watches = $query->take($amount)->get();
         $count = 0;
         foreach ($watches as $key => $watch) {
-            $url = $this->imageKitService->uploadFromUrl($watch->image_url, "{$watch->brand}_{$watch->model}_{$watch->id}");
+            $url = $this->imageKitService->uploadFromUrl($watch, "{$watch->brand}_{$watch->model}_{$watch->id}");
     
             if ($url) {
                 $count++;
