@@ -25,7 +25,7 @@ class ImageKitService
     {
         try {
             $url = $watch->image_url;
-            $response = Http::withHeaders($this->getRandomHeaders())->timeout(30)->get($this->cleanUrl($url));
+            $response = Http::withHeaders($this->getRandomHeaders($watch->image_url))->timeout(30)->get($this->cleanUrl($url));
             if (!$response->ok()) {
                 throw new \Exception("Statuscode: {$response->status()} Kan afbeelding niet downloaden: " . $url);
             }
@@ -87,7 +87,7 @@ class ImageKitService
         return $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
     }
 
-    private function getRandomHeaders(): array
+    private function getRandomHeaders($url): array
     {
         $userAgents = [
             // Chrome op Windows
@@ -102,17 +102,11 @@ class ImageKitService
             'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
         ];
 
-        $referers = [
-            'https://duckduckgo.com/',
-            'https://www.google.com/',
-            'https://www.bing.com/',
-            'https://search.yahoo.com/',
-            'https://www.ecosia.org/'
-        ];
+        $host = parse_url($url, PHP_URL_HOST);
 
         return [
             'User-Agent' => $userAgents[array_rand($userAgents)],
-            'Referer' => $referers[array_rand($referers)],
+            'Referer' => 'https://' . $host . '/',
         ];
     }
 }
