@@ -27,7 +27,7 @@ class WatchController extends Controller
     public function index(Request $request)
     {
         $filter = $request->brand;
-        $query = Watch::whereNotNull('image_url');
+        $query = Watch::where('image_url', 'like', '%ik.imagekit.io%');
         
         if ($filter) {
             $query->where('brand', $filter);
