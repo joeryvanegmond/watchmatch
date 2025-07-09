@@ -8,19 +8,24 @@ use App\Services\SerpApiService;
 use App\Services\WatchImageService;
 use App\Services\WatchSimilarityService;
 use App\Services\WatchUrlService;
+use Http\Discovery\Exception\NotFoundException;
 use Illuminate\Http\Request;
+use PhpParser\Node\Stmt\TryCatch;
 
 class WatchController extends Controller
 {
     private WatchImageService $imageService;
     private WatchUrlService $urlService;
+    private SerpApiService $searchService;
 
     public function __construct(
         WatchImageService $imageService,
         WatchUrlService $urlService,
+        SerpApiService $searchService,
     ) {
         $this->imageService = $imageService;
         $this->urlService = $urlService;
+        $this->searchService = $searchService;
     }
 
 
@@ -59,24 +64,34 @@ class WatchController extends Controller
 
     public function findAndShow(Request $request)
     {
-        $brand = $request->get('brand');
-        $model = $request->get('model');
-
-        if (!$brand || !$model) {
-            return response()->json(['error' => 'Vul merk en model in'], 400);
+        try {
+            $brand = $request->get('brand');
+            $model = $request->get('model');
+    
+            if (!$brand || !$model) {
+                return response()->json(['error' => 'Vul merk en model in'], 400);
+            }
+    
+            $isGarbage = $this->searchService->isGarbage($brand, $model);
+    
+            $info = null;
+            if(!$isGarbage) throw new NotFoundException("Dit lijkt geen horloge te zijn", 404);
+    
+            $watchToCompare = Watch::firstOrCreate(
+                [
+                    'brand' => strtolower($brand),
+                    'model' => strtolower($model),
+                ],
+                [
+                    'url' => $this->urlService->create($brand, $model),
+                ]
+            );
+            if (!$watchToCompare->image_url) $watchToCompare->image_url = $this->imageService->getPlaceholder();
+    
+            return view('watch.show', compact('watchToCompare'));
+        } catch (\Throwable $th) {
+            $message = $th->getMessage();
+            return view('response.404', compact('brand', 'model', 'message'));
         }
-
-        $watchToCompare = Watch::firstOrCreate(
-            [
-                'brand' => strtolower($brand),
-                'model' => strtolower($model),
-            ],
-            [
-                'url' => $this->urlService->create($brand, $model),
-            ]
-        );
-        if (!$watchToCompare->image_url) $watchToCompare->image_url = $this->imageService->getPlaceholder();
-
-        return view('watch.show', compact('watchToCompare'));
     }
 }
