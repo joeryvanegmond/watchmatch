@@ -25,7 +25,7 @@ class WatchImageService
         }
         
         try {
-            $variant = $item->variant ?? '';
+            $variant = $watch->variant ?? '';
             // $image = $this->googleSearch->searchImage("{$watch->brand} {$watch->model} {$variant}");
             $result = $this->quack->getFirstDuckDuckGoImage("{$watch->brand} {$watch->model} {$variant}");
             if ($result['image'] != null) {
