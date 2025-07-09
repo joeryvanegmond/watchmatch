@@ -78,7 +78,7 @@ class ImageKitService
             $newWidth = intval($width * ($percentage / 100));
             $newHeight = intval($height * ($percentage / 100));
 
-            if ($newHeight >= 2000 && $newHeight >= 2000) {
+            if ($newHeight >= 2000 || $newHeight >= 2000) {
                 $img->resize($newWidth, $newHeight, function ($constraint) {
                     $constraint->aspectRatio();
                     $constraint->upsize();
