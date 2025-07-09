@@ -24,8 +24,8 @@ class ImageKitService
     public function uploadFromUrl(Watch $watch, ?string $fileName = null): ?string
     {
         try {
-            $url = $watch->image_url;
-            $response = Http::withHeaders($this->getRandomHeaders($watch->image_url))->timeout(30)->get($this->cleanUrl($url));
+            $url = $this->cleanUrl($watch->image_url);
+            $response = Http::withHeaders($this->getRandomHeaders($watch->image_url))->timeout(30)->get($url);
             if (!$response->ok()) {
                 throw new \Exception("Statuscode: {$response->status()} Kan afbeelding niet downloaden: " . $url);
             }
@@ -105,8 +105,12 @@ class ImageKitService
         $host = parse_url($url, PHP_URL_HOST);
 
         return [
+            'Cache-Control' => 'no-cache',
             'User-Agent' => $userAgents[array_rand($userAgents)],
             'Referer' => 'https://' . $host . '/',
+            'Accept' => '*/*',
+            'Accept-Encoding' => 'gzip, deflate, br',
+            'Connection' => 'keep-alive'
         ];
     }
 }
