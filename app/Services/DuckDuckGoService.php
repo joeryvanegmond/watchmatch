@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\BlacklistedDomain;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class DuckDuckGoService
 {
@@ -21,7 +22,29 @@ class DuckDuckGoService
             'q' => $query,
             'vqd' => $vqd
         ])->json();
+        
         $image_url = $this->getAllowedImageUrl($response);
+        $nextPage = $response['next'];
+        $urlFound = false;
+        $count = 0;
+        while(!$urlFound) {
+            if($image_url)
+            {
+                $urlFound = true; 
+                break;
+            }
+
+            Log::warning("No usable image found on page {$count }for {$query}, trying next page..");
+            usleep(100000);
+
+            $response = Http::withHeaders($headers)->get("https://duckduckgo.com/{$nextPage}", [
+                'q' => $query,
+                'vqd' => $vqd
+            ])->json();
+            $nextPage = $response['next'];
+            $image_url = $this->getAllowedImageUrl($response);
+            $count++;
+        }
 
         return [
             'image' => $this->cleanUrl($image_url),
@@ -93,12 +116,12 @@ class DuckDuckGoService
                 return $imageUrl;
             }
         }
-
         return null; // Geen bruikbare url gevonden
     }
 
-    private function cleanUrl(string $url): string
+    private function cleanUrl(string $url): ?string
     {
+        if(!$url) return null;
         $parts = parse_url($url);
         return $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
     }
