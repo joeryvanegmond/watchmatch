@@ -34,7 +34,7 @@ class DuckDuckGoService
                     break;
                 }
     
-                Log::warning("No usable image found on page {$count }for {$query}, trying next page..");
+                Log::warning("No usable image found on {$nextPage} {$count} for {$query}, trying next page..");
                 usleep(100000);
     
                 $response = Http::withHeaders($headers)->get("https://duckduckgo.com/{$nextPage}", [
