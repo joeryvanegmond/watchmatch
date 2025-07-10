@@ -12,6 +12,7 @@ class DuckDuckGoService
     public function getFirstDuckDuckGoImage(string $query): array
     {
         $image_url = null;
+        $page = 100;
         $vqd = $this->getVqdToken($query);
         if (!$vqd) {
             throw new \Exception('Kon vqd token niet vinden');
@@ -20,11 +21,12 @@ class DuckDuckGoService
         $headers = $this->getRandomHeaders();
         $response = Http::withHeaders($headers)->get('https://duckduckgo.com/i.js', [
             'q' => $query,
+            's' => $page,
             'vqd' => $vqd
         ]);
+
         if ($response->ok()) {
             $image_url = $this->getAllowedImageUrl($response);
-            $nextPage = $response['next'];
             $urlFound = false;
             $count = 0;
             while(!$urlFound) {
@@ -33,15 +35,16 @@ class DuckDuckGoService
                     $urlFound = true; 
                     break;
                 }
-    
-                Log::warning("No usable image found on {$nextPage} {$count} for {$query}, trying next page..");
+                Log::warning("No usable image found on page {$page} for {$query}, trying next page..");
+                $page += 100;
+                
                 usleep(100000);
-    
-                $response = Http::withHeaders($headers)->get("https://duckduckgo.com/{$nextPage}", [
+                
+                $response = Http::withHeaders($headers)->get("https://duckduckgo.com/i.js", [
                     'q' => $query,
+                    's' => $page,
                     'vqd' => $vqd
                 ])->json();
-                $nextPage = $response['next'];
                 $image_url = $this->getAllowedImageUrl($response);
                 $count++;
             }
