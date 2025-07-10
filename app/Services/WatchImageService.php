@@ -28,13 +28,17 @@ class WatchImageService
             $variant = $watch->variant;
             // $image = $this->googleSearch->searchImage("{$watch->brand} {$watch->model} {$variant}");
             $result = $this->quack->getFirstDuckDuckGoImage("{$watch->brand} {$watch->model} {$variant} watch");
-            if ($result['image'] != null) {
-                $watch->image_url = $result['image'];
+            if($result){
+                if ($result['image'] != null) {
+                    $watch->image_url = $result['image'];
+                }
+                if ($result['url'] != null) {
+                    $watch->url = $result['url'];
+                }
+                $watch->save();
+            } else {
+                // $watch->delete();
             }
-            if ($result['url'] != null) {
-                $watch->url = $result['url'];
-            }
-            $watch->save();
             
             return false;
         } catch (\Throwable $e) {

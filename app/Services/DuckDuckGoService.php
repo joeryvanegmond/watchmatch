@@ -11,39 +11,40 @@ class DuckDuckGoService
 {
     public function getFirstDuckDuckGoImage(string $query): array
     {
+        $image_url = null;
         $vqd = $this->getVqdToken($query);
         if (!$vqd) {
             throw new \Exception('Kon vqd token niet vinden');
         }
 
         $headers = $this->getRandomHeaders();
-
         $response = Http::withHeaders($headers)->get('https://duckduckgo.com/i.js', [
             'q' => $query,
             'vqd' => $vqd
-        ])->json();
-        
-        $image_url = $this->getAllowedImageUrl($response);
-        $nextPage = $response['next'];
-        $urlFound = false;
-        $count = 0;
-        while(!$urlFound) {
-            if($image_url)
-            {
-                $urlFound = true; 
-                break;
-            }
-
-            Log::warning("No usable image found on page {$count }for {$query}, trying next page..");
-            usleep(100000);
-
-            $response = Http::withHeaders($headers)->get("https://duckduckgo.com/{$nextPage}", [
-                'q' => $query,
-                'vqd' => $vqd
-            ])->json();
-            $nextPage = $response['next'];
+        ]);
+        if ($response->ok()) {
             $image_url = $this->getAllowedImageUrl($response);
-            $count++;
+            $nextPage = $response['next'];
+            $urlFound = false;
+            $count = 0;
+            while(!$urlFound) {
+                if($image_url)
+                {
+                    $urlFound = true; 
+                    break;
+                }
+    
+                Log::warning("No usable image found on page {$count }for {$query}, trying next page..");
+                usleep(100000);
+    
+                $response = Http::withHeaders($headers)->get("https://duckduckgo.com/{$nextPage}", [
+                    'q' => $query,
+                    'vqd' => $vqd
+                ])->json();
+                $nextPage = $response['next'];
+                $image_url = $this->getAllowedImageUrl($response);
+                $count++;
+            }
         }
 
         return [
@@ -95,7 +96,7 @@ class DuckDuckGoService
         ];
     }
 
-    public function getAllowedImageUrl(array $response): ?string
+    public function getAllowedImageUrl($response): ?string
     {
         if (!isset($response['results']) || !is_array($response['results'])) {
             return null;
