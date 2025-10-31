@@ -38,14 +38,14 @@ class DuckDuckGoService
                 Log::warning("No usable image found on page {$page} for {$query}, trying next page..");
                 $page += 100;
                 
-                usleep(100000);
                 
                 $response = Http::withHeaders($headers)->get("https://duckduckgo.com/i.js", [
                     'q' => $query,
                     's' => $page,
                     'vqd' => $vqd
-                ])->json();
+                    ])->json();
                 $image_url = $this->getAllowedImageUrl($response);
+                usleep(100000);
                 $count++;
             }
         }
