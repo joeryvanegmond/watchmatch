@@ -30,6 +30,7 @@ class DuckDuckGoService
             $urlFound = false;
             $count = 0;
             while(!$urlFound) {
+                $vqd = $this->getVqdToken($query);
                 if($image_url)
                 {
                     $urlFound = true; 
