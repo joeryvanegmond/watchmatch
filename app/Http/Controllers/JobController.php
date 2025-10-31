@@ -59,25 +59,22 @@ class JobController extends Controller
     public function imagenator(Request $request)
     {
         $amount = $request->input('imagesPerRequest', 1);
-        // $totalImagesBefore = Watch::whereNotnull('image_url')->count();
+        $totalImagesBefore = Watch::whereNotnull('image_url')->count();
 
         $watchesWithoutImage = Watch::whereNull('image_url')
             ->orderBy('created_at', 'asc')
             ->take($amount)
             ->get();
-        $count = 0;
+
         foreach ($watchesWithoutImage as $key => $watch) {
             $this->imageService->fetchAndUpdateImage($watch);
-            $count++;
+
             if ($amount > 1) sleep(1);
         }
 
-        // $totalImages = Watch::whereNotnull('image_url')->count();
-        // $added = $totalImages - $totalImagesBefore;
-        // if ($added == 0) {
-        //     $
-        // }
-        return response("Generated image(s): {$count}");
+        $totalImages = Watch::whereNotnull('image_url')->count();
+        $added = $totalImages - $totalImagesBefore;
+        return response("Generated image(s): {$added}, total: {$totalImages}");
     }
 
 
