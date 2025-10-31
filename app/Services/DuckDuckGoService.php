@@ -123,9 +123,9 @@ class DuckDuckGoService
         return null; // Geen bruikbare url gevonden
     }
 
-    private function cleanUrl(string $url): ?string
+    private function cleanUrl(?string $url): ?string
     {
-        if(!$url) return null;
+        if(is_null($url)) return null;
         $parts = parse_url($url);
         return $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
     }
