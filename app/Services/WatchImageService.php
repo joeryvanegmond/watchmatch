@@ -26,20 +26,20 @@ class WatchImageService
         
         try {
             $variant = $watch->variant;
-            // $image = $this->googleSearch->searchImage("{$watch->brand} {$watch->model} {$variant}");
-            $result = $this->quack->getFirstDuckDuckGoImage("{$watch->brand} {$watch->model} {$variant} watch");
-            if($result){
-                if ($result['image'] != null) {
-                    $watch->image_url = $result['image'];
-                }
-                if ($result['url'] != null) {
-                    $watch->url = $result['url'];
-                }
-                $watch->save();
-            } else {
-                // $watch->delete();
+
+            $query = $this->sanitizeString("{$watch->brand} {$watch->model} {$variant} watch");
+
+
+            $result = $this->quack->getFirstDuckDuckGoImage($query);
+
+            if ($result['image'] != null) {
+                $watch->image_url = $result['image'];
             }
-            
+            if ($result['url'] != null) {
+                $watch->url = $result['url'];
+            }
+            $watch->save();
+
             return false;
         } catch (\Throwable $e) {
             if ($e->getCode() === 429) {
@@ -70,5 +70,27 @@ class WatchImageService
     public function getPlaceholder(): string
     {
         return $this->placeholder;
+    }
+
+    private function sanitizeString($query): string
+    {
+        // Verwijder quotes en trim spaties
+        $query = trim($query, "\"' ");
+
+        // Zet accenten om (é -> e, ü -> u, etc.)
+        $query = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $query);
+
+        // Vervang spaties en ongeldige tekens door underscores
+
+        // Meerdere underscores samenvoegen tot één
+        $query = preg_replace('/_+/', '_', $query);
+
+        // Kleine letters voor consistentie
+        $query = strtolower($query);
+
+        // Eventueel trailing underscores verwijderen
+        $query = trim($query, '_');
+
+        return $query;
     }
 }
