@@ -31,27 +31,28 @@ class JobController extends Controller
 
     public function similizator()
     {
-        // Get all watches without similarities
-        $watchToCompare = Watch::doesntHave('similarWatches')
-        ->orderBy('created_at', 'asc')
-        ->first();
-
-        // Check if there are any watches to compare
-        if (is_null($watchToCompare)) {
-            return response()->json(['message' => 'No watches available for comparison'], 404);
-        }
-
-        // Search for similarities for each watch
         try {
+            // Get all watches without similarities
+            $watchToCompare = Watch::doesntHave('similarWatches')
+                ->orderBy('created_at', 'asc')
+                ->first();
+
+            // Check if there are any watches to compare
+            if (is_null($watchToCompare)) {
+                return response()->json(['message' => 'No watches available for comparison'], 404);
+            }
+
+            // Search for similarities for each watch
+
             //code...
             $results = $this->searchService->search($watchToCompare->brand, $watchToCompare->model);
             $result = $this->similarityService->processAndStoreSimilarities($results, $watchToCompare);
+
+            $totalWatches = Watch::all()->count();
         } catch (\Throwable $e) {
             logger()->error("Similizator error: " . $e->getMessage());
+            throw new \Exception($e->getMessage());
         }
-
-        $totalWatches = Watch::all()->count();
-
         // Link results with original watch
         return response('Added ' . count($result['watches'] ?? []) . ' similarities for ' . $watchToCompare->brand . ' ' . $watchToCompare->model . ' total of ' . $totalWatches . ' watches');
     }
@@ -60,11 +61,11 @@ class JobController extends Controller
     {
         $amount = $request->input('imagesPerRequest', 1);
         $totalImagesBefore = Watch::whereNotnull('image_url')->count();
-        
+
         $watchesWithoutImage = Watch::whereNull('image_url')
-        ->orderBy('created_at', 'asc')
-        ->take($amount)
-        ->get();
+            ->orderBy('created_at', 'asc')
+            ->take($amount)
+            ->get();
 
         foreach ($watchesWithoutImage as $key => $watch) {
             $this->imageService->fetchAndUpdateImage($watch);
@@ -78,7 +79,8 @@ class JobController extends Controller
     }
 
 
-    public function imagekit(Request $request) {
+    public function imagekit(Request $request)
+    {
         $amount = $request->input('imagesPerRequest', 1);
         $query = Watch::where('image_url', 'not like', '%ik.imagekit.io%');
         $watchesToGo = $query->count();
@@ -86,7 +88,7 @@ class JobController extends Controller
         $count = 0;
         foreach ($watches as $key => $watch) {
             $url = $this->imageKitService->uploadFromUrl($watch, "{$watch->brand}_{$watch->model}_{$watch->id}");
-            
+
             if ($url) {
                 $count++;
                 $watch->url = $watch->image_url;
