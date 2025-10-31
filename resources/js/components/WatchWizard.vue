@@ -8,8 +8,8 @@
 
     <!-- Result -->
     <div class="row d-flex justify-content-center">
-      <div v-if="loading" class="d-flex justify-content-center position-absolute bottom-50">
-        <spinningwheel></spinningwheel>
+      <div v-if="loading" class="d-flex justify-content-center position-fixed top-0 h-100 w-100 z-10 bg-black opacity-75">
+        <spinningwheel class="top-50 text-white"></spinningwheel>
       </div>
       <div class="col-md-10">
         <div tag="div" class="watch-grid" :style="{ '--viewport-width': viewportWidthMinus30 + 'px' }">
@@ -87,26 +87,21 @@ export default {
       this.loading = true;
       axios.get(`/watches?brand=${this.filter ?? ''}&page=${this.page}`)
         .then(res => {
-          this.watches.push(...res.data.data);
+          this.watches = [...this.watches, ...res.data.data];
           this.dupWatches = this.watches;
           this.hasMore = res.data.current_page < res.data.last_page;
           this.page++;
-          this.loading = false;
           this.showWatches = true;
 
           // wacht tot de DOM is bijgewerkt
           this.$nextTick(() => {
             this.setHeight();
-            const items = document.querySelectorAll('.watch-grid .card');
-            items.forEach(item => {
-              const rowHeight = parseInt(getComputedStyle(item).getPropertyValue('--row-height'), 10);
-              if (rowHeight === 0) {
-                item.remove();
-              }
-            });
           });
         }).catch(err => {
           console.error('Error loading watches:', err);
+        }).finally(() => {
+          this.loading = false;
+          console.log(this.watches.length);
         });
     },
     setHeight() {
@@ -146,6 +141,7 @@ export default {
         if (scrollTop > this.lastScrollTop) {
           if (scrollTop + clientHeight >= scrollHeight - threshold) {
             this.loadWatches();
+              console.log('loading watches...');
           }
         }
 
