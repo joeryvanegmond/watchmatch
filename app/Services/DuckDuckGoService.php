@@ -19,7 +19,7 @@ class DuckDuckGoService
         }
 
         $headers = $this->getRandomHeaders();
-        $response = Http::withHeaders($headers)->get('https://duckduckgo.com/i.js', [
+        $response = Http::withHeaders($headers)->timeout(30)->get('https://duckduckgo.com/i.js', [
             'q' => $query,
             's' => $page,
             'vqd' => $vqd
