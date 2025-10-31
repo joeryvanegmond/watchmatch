@@ -11,6 +11,7 @@ class DuckDuckGoService
 {
     public function getFirstDuckDuckGoImage(string $query): array
     {
+        $query = rawurlencode($query);
         $image_url = null;
         $page = 100;
         $vqd = $this->getVqdToken($query);
