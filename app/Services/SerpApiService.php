@@ -16,19 +16,23 @@ class SerpApiService
 
     public function search(string $brand, string $model): array
     {
-        $response = OpenAI::chat()->create([
-            'model' => 'gpt-4.1-nano',
-            'messages' => [
-                [
-                    'role' => 'assistant',
-                    'content' => $this->CreateSearchPrompt($brand, $model),
+        try {
+            $response = OpenAI::chat()->create([
+                'model' => 'gpt-4.1-nano',
+                'messages' => [
+                    [
+                        'role' => 'assistant',
+                        'content' => $this->CreateSearchPrompt($brand, $model),
+                    ]
                 ]
-            ]
-        ]);
-        $rawContent = $rawContent = $response->choices[0]->message->content;
-        $watches = json_decode($rawContent);
-
-        return $watches ?? [];
+            ]);
+            $rawContent = $rawContent = $response->choices[0]->message->content;
+            $watches = json_decode($rawContent);
+    
+            return $watches ?? [];
+        } catch (\Throwable $th) {
+            throw new \Exception($th->getMessage());
+        }
     }
 
     public function isGarbage(string $brand, string $model)

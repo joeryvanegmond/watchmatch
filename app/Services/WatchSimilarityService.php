@@ -23,28 +23,32 @@ class WatchSimilarityService
 
     public function processAndStoreSimilarities($results, Watch $original)
     {
-        $watches = collect();
-        $info = null;
+        try {
+            $watches = collect();
+            $info = null;
 
-        foreach ($results as $item) {
-            $watch = Watch::updateOrCreate(
-                [
-                    'brand' => strtolower($item->brand),
-                    'model' => strtolower($item->model),
-                    'variant' => strtolower($item->variant ?? ''),
-                ],
-                [
-                    'price' => $item->price ?? 0,
-                    'url' => $this->urlService->create($item->brand, $item->model, $item->variant ?? ''),
-                ]
-            );
+            foreach ($results as $item) {
+                $watch = Watch::updateOrCreate(
+                    [
+                        'brand' => strtolower($item->brand),
+                        'model' => strtolower($item->model),
+                        'variant' => strtolower($item->variant ?? ''),
+                    ],
+                    [
+                        'price' => $item->price ?? 0,
+                        'url' => $this->urlService->create($item->brand, $item->model, $item->variant ?? ''),
+                    ]
+                );
 
-            $watch->image_url ??= $this->imageService->getPlaceholder();
-            $watches->push($watch);
-            $original->similarWatches()->syncWithoutDetaching([$watch->id => ['link_strength' => 0.1]]);
+                $watch->image_url ??= $this->imageService->getPlaceholder();
+                $watches->push($watch);
+                $original->similarWatches()->syncWithoutDetaching([$watch->id => ['link_strength' => 0.1]]);
+            }
+
+            return ['watches' => $watches, 'info' => $info];
+        } catch (\Throwable $th) {
+            throw new \Exception($th->getMessage());
         }
-
-        return ['watches' => $watches, 'info' => $info];
     }
 
     public function linkWatches(int $originalId, int $matchId)
