@@ -46,6 +46,7 @@ class WatchImageService
                 $this->limitExceeded = true;
             }
             Log::warning("Image search failed for {$watch->brand} {$watch->model}: {$e->getMessage()}");
+            $watch->delete();
             return $this->limitExceeded;
         }
     }
