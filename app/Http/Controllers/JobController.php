@@ -81,7 +81,7 @@ class JobController extends Controller
         $count = 0;
         foreach ($watches as $key => $watch) {
             $url = $this->imageKitService->uploadFromUrl($watch, "{$watch->brand}_{$watch->model}_{$watch->id}");
-    
+            
             if ($url) {
                 $count++;
                 $watch->url = $watch->image_url;

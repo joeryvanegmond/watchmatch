@@ -29,6 +29,8 @@ class ImageKitService
         try {
             $url = $this->cleanUrl($watch->image_url);
 
+            $fileName = $this->sanitizeFilename($fileName);
+
             // Map van MIME types naar extensies
             $mimeToExt = [
                 'image/jpeg' => 'jpg',
@@ -57,7 +59,6 @@ class ImageKitService
                     $fileName .= '.jpg'; // fallback extensie
                 }
             }
-
             $tempPath = $tempDir . DIRECTORY_SEPARATOR . $fileName;
 
             // Download bestand lokaal
@@ -76,7 +77,7 @@ class ImageKitService
             $height = $img->height();
             $newWidth = intval($width * ($percentage / 100));
             $newHeight = intval($height * ($percentage / 100));
-            
+
             if ($width >= 2000 || $height >= 2000) {
                 $img->resize($newWidth, $newHeight, function ($constraint) {
                     $constraint->aspectRatio();
@@ -107,7 +108,6 @@ class ImageKitService
                 'useUniqueFileName' => false,
                 'overwriteFile' => true,
             ]);
-
             // Verwijder tijdelijk bestand
             unlink($tempPath);
 
@@ -121,6 +121,29 @@ class ImageKitService
         }
     }
 
+
+    private function sanitizeFilename($filename): string
+    {
+        // Verwijder quotes en trim spaties
+        $filename = trim($filename, "\"' ");
+
+        // Zet accenten om (é -> e, ü -> u, etc.)
+        $filename = iconv('UTF-8', 'ASCII//TRANSLIT//IGNORE', $filename);
+
+        // Vervang spaties en ongeldige tekens door underscores
+        $filename = preg_replace('/[^A-Za-z0-9]+/', '_', $filename);
+
+        // Meerdere underscores samenvoegen tot één
+        $filename = preg_replace('/_+/', '_', $filename);
+
+        // Kleine letters voor consistentie
+        $filename = strtolower($filename);
+
+        // Eventueel trailing underscores verwijderen
+        $filename = trim($filename, '_');
+
+        return $filename;
+    }
 
     private function cleanUrl(string $url): string
     {
