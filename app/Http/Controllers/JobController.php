@@ -47,10 +47,9 @@ class JobController extends Controller
             //code...
             $results = $this->searchService->search($watchToCompare->brand, $watchToCompare->model);
             $result = $this->similarityService->processAndStoreSimilarities($results, $watchToCompare);
-
+            
             // Link results with original watch
-            $totalWatches = Watch::all()->count();
-            return response('Added ' . count($result['watches'] ?? []) . ' similarities for ' . $watchToCompare->brand . ' ' . $watchToCompare->model . ' total of ' . $totalWatches . ' watches');
+            return response('Added ' . count($result['watches'] ?? []) . ' similarities');
         } catch (\Throwable $e) {
             logger()->error("Similizator error: " . $e->getMessage());
             throw new \Exception($e->getMessage());
