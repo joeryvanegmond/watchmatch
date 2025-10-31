@@ -37,7 +37,7 @@ class SearchController extends Controller
             $query->where('brand', $filter);
         }
         
-        $watches = $query->paginate(50, ['*'], 'page', $curPage);
+        $watches = $query->paginate(100, ['*'], 'page', $curPage);
 
         $watches->transform(function ($watch) {
             if (is_null($watch->image_url)) {
