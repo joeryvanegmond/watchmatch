@@ -2,8 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 @include('layouts.head')
-
-<body class="p-4" id="app">
+<body class="ps-4 pe-4 pb-4" id="app">
     @include('layouts.navigation')
 
     @yield('content')
