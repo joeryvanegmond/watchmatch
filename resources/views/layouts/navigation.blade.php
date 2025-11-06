@@ -6,7 +6,7 @@
     </div>
     <div class="d-flex justify-center">
         <div>
-            <h4 class="logo text-center cursor-pointer" onclick="window.location.href = '/'">WatchMatch</h4>
+            <h1 class="logo text-center cursor-pointer" onclick="window.location.href = '/'">WatchMatch</h1>
         </div>
     </div>
     <div class="row">

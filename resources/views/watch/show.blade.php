@@ -3,7 +3,7 @@
 @section('content')
 <div class="row mb-4 pb-4" id="details-brands">
 </div>
-<div class="row text-white d-flex justify-content-center">
+<div class="row d-flex justify-content-center">
     <div class="col-md-10 d-flex flex-column flex-md-row justify-content-center mb-4">
         <div class="d-flex justify-content-center">
             <div class="card col-10 col-md-8">
@@ -25,8 +25,8 @@
         </div>
     </div>
 </div>
-<div class="row-fluid text-white text-center d-flex justify-content-center">
-    <div class="col-12 col-md-10 col-lg-8 col-xl-6">
+<div class="row-fluid text-center d-flex justify-content-center">
+    <div class="col-md-12">
         <h5>Vergelijkbare horloges</h5>
         <similarities :original="{{$watchToCompare}}"></similarities>
     </div>

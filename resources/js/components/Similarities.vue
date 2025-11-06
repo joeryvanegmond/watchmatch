@@ -7,7 +7,7 @@
             <div v-if="loading" class="d-flex justify-content-center mt-4">
                 <spinningwheel></spinningwheel>
             </div>
-            <div v-if="similarities.length == 0 && !loading" class="text-white mt-4">
+            <div v-if="similarities.length == 0 && !loading" class=" mt-4">
                 <span>Niks gevonden..</span>
             </div>
             <div name="watch-fade" tag="div" class="watch-grid">
@@ -16,7 +16,7 @@
                     <div class="col-12">
                         <img :src="watch.image_url" alt="Watch image" class="watch-card-image" />
                         <button
-                            class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
+                            class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column  p-2"
                             style="background: rgba(0, 0, 0, 0.4);" @click="findWatch(watch)">
                             <div class="d-flex justify-content-between justify-content-start ">
                                 <div class="fw-bold ps-3 pt-2 h4 text-start">{{ watch.brand[0].toUpperCase() +

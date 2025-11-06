@@ -7,7 +7,7 @@
     }"
     :loop="true">
     <swiper-slide v-for="(watch, index) in watches" :key="index">
-      <div class="text-white me-2 ms-2 text-center cursor-pointer head" @click="filterbrand(watch)">{{ watch[0].toUpperCase() + watch.slice(1) }}
+      <div class="me-2 ms-2 text-center cursor-pointer head" @click="filterbrand(watch)">{{ watch[0].toUpperCase() + watch.slice(1) }}
       </div>
     </swiper-slide>
   </swiper>

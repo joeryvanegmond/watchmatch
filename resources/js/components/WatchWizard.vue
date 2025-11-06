@@ -8,19 +8,21 @@
 
     <!-- Result -->
     <div class="row d-flex justify-content-center">
-      <div v-if="loading" class="d-flex justify-content-center position-fixed top-0 h-100 w-100 z-10 bg-black opacity-75">
+      <div v-if="loading"
+        class="d-flex justify-content-center position-fixed top-0 h-100 w-100 z-10 bg-black opacity-75">
         <spinningwheel class="top-50 text-white"></spinningwheel>
       </div>
-      <div class="col-md-10">
+      <div class="col-md-12">
         <div tag="div" class="watch-grid" :style="{ '--viewport-width': viewportWidthMinus30 + 'px' }">
           <div class="card" v-for="(watch, index) in watches" :key="index" :id="'watch-' + watch.id">
-            <img :src="watch.image_url" @error="onImageError" alt="Watch image" class="watch-card-image" loading="lazy" />
+            <img :src="watch.image_url" @error="onImageError($event, watch)" alt="Watch image" class="watch-card-image"
+              loading="lazy" />
             <button
               class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
               style="background: rgba(0, 0, 0, 0.4);" @click="zoekAlternatieven(watch)">
               <div class="d-flex justify-content-between justify-content-start">
                 <div class="fw-bold ps-3 pt-2 h4 text-start head">{{ watch.brand[0].toUpperCase() + watch.brand.slice(1)
-                  }}
+                }}
                 </div>
               </div>
               <div class="position-absolute bottom-0 start-0 w-100">
@@ -88,7 +90,6 @@ export default {
       axios.get(`/watches?brand=${this.filter ?? ''}&page=${this.page}`)
         .then(res => {
           this.watches = [...this.watches, ...res.data.data];
-          this.dupWatches = this.watches;
           this.hasMore = res.data.current_page < res.data.last_page;
           this.page++;
           this.showWatches = true;
@@ -101,7 +102,6 @@ export default {
           console.error('Error loading watches:', err);
         }).finally(() => {
           this.loading = false;
-          console.log(this.watches.length);
         });
     },
     setHeight() {
@@ -141,7 +141,7 @@ export default {
         if (scrollTop > this.lastScrollTop) {
           if (scrollTop + clientHeight >= scrollHeight - threshold) {
             this.loadWatches();
-              console.log('loading watches...');
+            console.log('loading watches...');
           }
         }
 
@@ -220,8 +220,10 @@ export default {
     onResize() {
       this.viewportWidth = window.innerWidth;
     },
-    onImageError(event) {
-      event.target.src = 'https://static.watchpatrol.net/static/explorer/img/no_watch_placeholder.8793368e62ea.png'
+    onImageError(event, watch) {
+      event.target.src = 'https://static.watchpatrol.net/static/explorer/img/no_watch_placeholder.8793368e62ea.png';
+      this.watches = this.watches.filter(w => w.id !== watch.id);
+      console.log('removing ' + watch.id + ' from view');
     }
   },
   computed: {

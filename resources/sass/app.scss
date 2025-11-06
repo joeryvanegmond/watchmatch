@@ -1,11 +1,12 @@
 @import 'bootstrap/scss/bootstrap';
 
 body {
-  background-color: black;
+  background-color: white;
 }
 
 .logo {
   font-family: 'Playfair Display', 'Times New Roman', Times, serif;
+  color: #000;
 }
 
 .head {
@@ -20,7 +21,7 @@ input {
   width: 100%;
   font-weight: bold;
   color: black;
-  border: 0.2px solid lightgrey;
+  border: 0.2px solid rgb(107, 107, 107);
 }
 
 button {
@@ -49,12 +50,6 @@ button {
   }
 }
 
-// @media (min-width: 768px) and (max-width: 1199px) {
-//   .watch-grid {
-//       column-count: 3;
-//   }
-// }
-
 @media (max-width: 767px) {
   .watch-grid {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -71,8 +66,8 @@ button {
   border-radius: 8px;
   overflow: hidden;
   color: white;
-  // position: relative;
   grid-row-end: span var(--row-height);
+  box-shadow: 0px 0px 20px #0000000f;
 }
 
 .watch-card-image {
@@ -106,24 +101,6 @@ button {
   opacity: 1;
   transform: translateY(0);
 }
-
-// .watch-card {
-//   opacity: 0;
-//   animation: fadeInUp 0.5s ease forwards;
-//   animation-delay: var(--delay);
-// }
-
-// .watch-card.visible {
-//   opacity: 0;
-//   animation: fadeInUp 0.5s ease forwards;
-//   animation-delay: var(--delay);
-// }
-
-// .watch-card.hidden {
-//   opacity: 1;
-//   animation: fadeOut 0.5s ease forwards;
-//   animation-delay: var(--delay);
-// }
 
 /* Extra als fallback */
 @keyframes fadeInUp {
