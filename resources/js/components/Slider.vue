@@ -1,13 +1,34 @@
 <template>
-  <swiper :slides-per-view="4" :modules="modules" :autoplay="{ autoplay: 10, disableOnInteraction: false }"
-    class="mySwiper" :breakpoints="{
-      320: { slidesPerView: 4 },
-      768: { slidesPerView: 7 },
-      1000: { slidesPerView: 10 }
-    }"
-    :loop="true">
-    <swiper-slide v-for="(watch, index) in watches" :key="index">
-      <div class="me-2 ms-2 text-center cursor-pointer head" @click="filterbrand(watch)">{{ watch[0].toUpperCase() + watch.slice(1) }}
+  <swiper 
+  :modules="modules" 
+    :autoplay="{ delay: 0.5, disableOnInteraction: false }" 
+    :loop="true" 
+    :free-mode="true" 
+    :a11y="false"
+    :speed="11000" 
+    :breakpoints="{
+      0: { /* when window >=0px - webflow mobile landscape/portriat */
+       spaceBetween: 30,
+       slidesPerView: 4
+     },
+     480: { /* when window >=0px - webflow mobile landscape/portriat */
+       spaceBetween: 30,
+       slidesPerView: 7
+     },
+      767: { /* when window >= 767px - webflow tablet */
+       spaceBetween: 40,
+       slidesPerView: 7
+     },
+     992: { /* when window >= 988px - webflow desktop */
+       spaceBetween: 40,
+       slidesPerView: 10
+     }
+    }" 
+    :slides-per-view="4" 
+    class="trusted-by-list">
+    <swiper-slide class="trusted-by-list" v-for="(watch, index) in watches" :key="index">
+      <div class="me-2 ms-2 text-center cursor-pointer head" @click="filterbrand(watch)">{{ watch[0].toUpperCase() +
+        watch.slice(1) }}
       </div>
     </swiper-slide>
   </swiper>
@@ -31,8 +52,7 @@ export default {
     onChange() {
       this.$emit('update:watches', this.watches);
     },
-    filterbrand(brand)
-    {
+    filterbrand(brand) {
       window.location.href = `/?brand=${brand}`;
     }
   }
