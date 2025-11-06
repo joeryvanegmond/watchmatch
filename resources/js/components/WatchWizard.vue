@@ -14,7 +14,7 @@
       <div class="col-md-10">
         <div tag="div" class="watch-grid" :style="{ '--viewport-width': viewportWidthMinus30 + 'px' }">
           <div class="card" v-for="(watch, index) in watches" :key="index" :id="'watch-' + watch.id">
-            <img :src="watch.image_url" alt="Watch image" class="watch-card-image" loading="lazy" />
+            <img :src="watch.image_url" @error="onImageError" alt="Watch image" class="watch-card-image" loading="lazy" />
             <button
               class="watch-card-overlay position-absolute top-0 start-0 w-100 h-100 d-flex flex-column text-white p-2"
               style="background: rgba(0, 0, 0, 0.4);" @click="zoekAlternatieven(watch)">
@@ -219,6 +219,9 @@ export default {
     },
     onResize() {
       this.viewportWidth = window.innerWidth;
+    },
+    onImageError(event) {
+      event.target.src = 'https://static.watchpatrol.net/static/explorer/img/no_watch_placeholder.8793368e62ea.png'
     }
   },
   computed: {

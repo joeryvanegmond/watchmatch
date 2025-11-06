@@ -32,7 +32,7 @@ class WatchController extends Controller
     public function index(Request $request)
     {
         $filter = $request->brand;
-        $query = Watch::where('image_url', 'like', '%ik.imagekit.io%');
+        $query = Watch::where('image_url', '!=', null);
         
         if ($filter) {
             $query->where('brand', $filter);
@@ -40,7 +40,7 @@ class WatchController extends Controller
         
         $watches = json_encode(
             $query->inRandomOrder()
-            ->paginate(30, ['*'], 'page', 1)
+            ->paginate(50, ['*'], 'page', 1)
         );
         
         return view('watch.index', compact('watches', 'filter'));
