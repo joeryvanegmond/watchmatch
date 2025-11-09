@@ -56,16 +56,18 @@ class JobController extends Controller
         }
     }
 
-    public function descriptinator() 
+    public function descriptinator(Request $request) 
     {
         try {
-            $watchWithoutDescription = Watch::whereNull('description')->first();
-            $result = $this->searchService->getDescription($watchWithoutDescription->brand, $watchWithoutDescription->model);
-
-            $watchWithoutDescription->description = $result->description;
-            $watchWithoutDescription->save();
-
-            return response('Generated description for ' . $watchWithoutDescription->brand . ' ' . $watchWithoutDescription->model);
+            $amount = $request->input('amountPerRequest', 1);
+            
+            $watchWithoutDescription = Watch::whereNull('description')->take($amount)->get();
+            foreach ($watchWithoutDescription as $key => $value) {
+                $result = $this->searchService->getDescription($value->brand, $value->model);
+                $value->description = $result->description;
+                $value->save();
+            }
+            return response('Generated description for ' . $watchWithoutDescription->count() . ' watches');
         } catch (\Throwable $e) {
             logger()->error("Descriptinator error: " . $e->getMessage());
         }
