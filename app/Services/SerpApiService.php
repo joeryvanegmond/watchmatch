@@ -134,7 +134,7 @@ class SerpApiService
 
         Het merk betreft {$brand} en het model is {$model}
 
-        - "description" (string): een korte, natuurlijke beschrijving (maximaal 2 tot 3 zinnen) van dit horloge.  
+        - "description" (string): een korte, natuurlijke beschrijving (maximaal 2 tot 3 zinnen) van dit horloge, IN HET ENGELS.  
             De beschrijving moet:
             - op menselijke toon geschreven zijn (niet generiek of robotachtig);  
             - de stijl, het type en het gebruiksdoel kort benoemen (bijv. duikhorloge, dress watch, sportief, chronograaf, vintage geïnspireerd, etc.);  
@@ -144,11 +144,11 @@ class SerpApiService
             - in neutraal Nederlands geschreven zijn (geen Engelse termen tenzij modelnaam).  
 
         Voorbeeld van een correcte "description":
-        > "De Tudor Black Bay 58 is een compact duikhorloge van 39 mm met een vintage uitstraling en automatisch uurwerk, geïnspireerd op de duikmodellen uit de jaren 50."
+        > "The Tudor Black Bay 58 is a compact 39mm diving watch with a vintage look and automatic movement, inspired by the diving models of the 1950s."
 
         Verwachte output:
         {
-        "description": "De Tudor Black Bay 58 is een compact duikhorloge van 39 mm met een vintage uitstraling en automatisch uurwerk, geïnspireerd op de duikmodellen uit de jaren 50.",
+        "description": "The Tudor Black Bay 58 is a compact 39mm diving watch with a vintage look and automatic movement, inspired by the diving models of the 1950s.",
         }
         TEXT;
     }
