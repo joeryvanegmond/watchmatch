@@ -61,10 +61,22 @@ class JobController extends Controller
         try {
             $amount = $request->input('amountPerRequest', 1);
             
-            $watchWithoutDescription = Watch::whereNull('description')->take($amount)->get();
+            $watchWithoutDescription = Watch::whereNull('weight')->take($amount)->get();
             foreach ($watchWithoutDescription as $key => $value) {
                 $result = $this->searchService->getDescription($value->brand, $value->model);
-                $value->description = $result->description;
+                $value->description = $result->description ?? null;
+                $value->type = $result->type ?? null;
+                $value->diameter = $result->diameter ?? null;
+                $value->material = $result->material ?? null;
+                $value->dial_color = $result->dial_color ?? null;
+                $value->band_color = $result->band_color ?? null;
+                $value->movement = $result->movement ?? null;
+                $value->year = $result->year ?? null;
+                $value->water_resistance = $result->water_resistance ?? null;
+                $value->gender = $result->gender ?? null;
+                $value->style = $result->style ?? null;
+                $value->weight = $result->weight ?? null;
+                
                 $value->save();
             }
             return response('Generated description for ' . $watchWithoutDescription->count() . ' watches');

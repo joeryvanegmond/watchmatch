@@ -1,5 +1,4 @@
-<div class="pt-2 ps-4 pe-4 position-fixed z-10 w-100 start-0" style="background: linear-gradient(180deg, rgba(255, 255, 255, 1) 87%, rgba(255, 255, 255, 0) 100%) !important;
-">
+<div class="pt-2 ps-4 pe-4 position-fixed z-10 w-100 start-0 bg-white">
     <div class="d-flex justify-center">
         <div>
             <h1 class="logo text-center cursor-pointer" onclick="window.location.href = '/'">WatchMatch</h1>

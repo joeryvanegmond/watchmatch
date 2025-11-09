@@ -28,7 +28,7 @@ class SerpApiService
             ]);
             $rawContent = $rawContent = $response->choices[0]->message->content;
             $watches = json_decode($rawContent);
-    
+
             return $watches ?? [];
         } catch (\Throwable $th) {
             throw new \Exception($th->getMessage());
@@ -49,7 +49,6 @@ class SerpApiService
             ]);
             $rawContent = $rawContent = $response->choices[0]->message->content;
             $description = json_decode($rawContent);
-    
             return $description ?? null;
         } catch (\Throwable $th) {
             throw new \Exception($th->getMessage());
@@ -130,25 +129,61 @@ class SerpApiService
     private function CreateDescriptionPrompt($brand, $model)
     {
         return <<<TEXT
-        Je krijgt van mij een horlogemerk en model. 
+        You are an expert watch data analyst.
+    
+        I will give you a **watch brand** and **model**.
+        Please return a structured JSON object describing this watch based on your knowledge.
+    
+        Brand: {$brand}
+        Model: {$model}
+    
+        Generate the following fields (in English, concise, factual — no marketing language):
+    
+        - "description" (string): 1–3 sentences describing the style, purpose, and notable traits (no marketing).
+        - "type" (string): general category you MUST choose exactly one value from this list: ["Dive", "Dress", "Chronograph", "Field", "Pilot", "GMT", "Racing", "Minimalist", "Smartwatch", "Luxury", "Casual"]
+        - "diameter" (number, in mm): approximate case diameter if known or typical for this model.
+        - "material" (string): case material (e.g. Stainless steel, Titanium, Gold, Ceramic, etc.)
+        - "dial_color" (string): main dial color (e.g. Black, Blue, Silver, White, etc.)
+        - "band_color" (string): main band color if relevant.
+        - "movement" (string): movement type (e.g. Automatic, Quartz, Manual, etc.)
+        - "year" (number): introduction year if known or best estimate.
+        - "water_resistance" (number): in meters, if known.
+        - "gender" (string): Male, Female, or Unisex.
+        - "style" (string): design style, you MUST choose exactly one value from this list: ["Vintage", "Modern", "Classic", "Sporty", "Minimalist", "Luxury"]
+        - "weight" (number): approximate grams if known or typical value.
 
-        Het merk betreft {$brand} en het model is {$model}
-
-        - "description" (string): een korte, natuurlijke beschrijving (maximaal 2 tot 3 zinnen) van dit horloge, IN HET ENGELS.  
-            De beschrijving moet:
-            - op menselijke toon geschreven zijn (niet generiek of robotachtig);  
-            - de stijl, het type en het gebruiksdoel kort benoemen (bijv. duikhorloge, dress watch, sportief, chronograaf, vintage geïnspireerd, etc.);  
-            - indien mogelijk een opvallend kenmerk noemen (materiaal, wijzerplaatkleur, kaliber, formaat, etc.);  
-            - geen loze marketingtaal bevatten ("prachtig", "iconisch", "geweldig", etc. vermijden);  
-            - nooit verwijzen naar de prijs of beschikbaarheid;  
-            - in neutraal Nederlands geschreven zijn (geen Engelse termen tenzij modelnaam).  
-
-        Voorbeeld van een correcte "description":
-        > "The Tudor Black Bay 58 is a compact 39mm diving watch with a vintage look and automatic movement, inspired by the diving models of the 1950s."
-
-        Verwachte output:
+        Output ONLY valid JSON in the following format:
+    
         {
-        "description": "The Tudor Black Bay 58 is a compact 39mm diving watch with a vintage look and automatic movement, inspired by the diving models of the 1950s.",
+          "description": "string",
+          "type": "string",
+          "diameter": number,
+          "material": "string",
+          "dial_color": "string",
+          "band_color": "string",
+          "movement": "string",
+          "year": number,
+          "water_resistance": number,
+          "gender": "string",
+          "style": "string",
+          "weight": number
+        }
+    
+        Example:
+    
+        {
+          "description": "The Omega Seamaster 300M is a 42mm automatic dive watch with a ceramic bezel and distinctive wave-pattern dial.",
+          "type": "Dive watch",
+          "diameter": 42,
+          "material": "Stainless steel",
+          "dial_color": "Blue",
+          "band_color": "Silver",
+          "movement": "Automatic",
+          "year": 2018,
+          "water_resistance": 300,
+          "gender": "Male",
+          "style": "Sporty",
+          "weight": 180
         }
         TEXT;
     }
