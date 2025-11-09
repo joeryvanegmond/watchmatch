@@ -45,7 +45,7 @@ vergelijk prijzen.')
 </div>
 <div class="row-fluid text-center d-flex justify-content-center">
     <div class="col-md-12">
-        <h5>Vergelijkbare horloges</h5>
+        <h5>Similar watches</h5>
         <similarities :original="{{$watchToCompare}}"></similarities>
     </div>
 </div>
