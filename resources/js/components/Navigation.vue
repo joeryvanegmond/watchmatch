@@ -1,7 +1,7 @@
 <template>
     <div class="col-md-12 d-flex pt-4 pb-2 justify-content-around flex-column flex-sm-row">
         <div class="col col-lg-4 pe-1">
-            <input class="me-sm-4" type="text" v-model="brand" placeholder="Merk" @blur="findWatch()" required />
+            <input class="me-sm-4" type="text" v-model="brand" placeholder="Brand" @blur="findWatch()" required />
         </div>
 
         <div class="col col-lg-4 ps-md-3">

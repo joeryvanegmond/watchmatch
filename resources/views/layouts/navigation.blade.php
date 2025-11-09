@@ -1,4 +1,4 @@
-<div class="row pt-2 position-fixed z-10 bg-white w-100">
+<div class="pt-2 ps-4 pe-4 position-fixed z-10 bg-white w-100 start-0">
     <div class="d-flex justify-center">
         <div>
             <h1 class="logo text-center cursor-pointer" onclick="window.location.href = '/'">WatchMatch</h1>
