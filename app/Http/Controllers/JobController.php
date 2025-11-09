@@ -56,6 +56,21 @@ class JobController extends Controller
         }
     }
 
+    public function descriptinator() 
+    {
+        try {
+            $watchWithoutDescription = Watch::whereNull('description')->first();
+            $result = $this->searchService->getDescription($watchWithoutDescription->brand, $watchWithoutDescription->model);
+
+            $watchWithoutDescription->description = $result->description;
+            $watchWithoutDescription->save();
+
+            return response('Generated description for ' . $watchWithoutDescription->brand . ' ' . $watchWithoutDescription->model);
+        } catch (\Throwable $e) {
+            logger()->error("Descriptinator error: " . $e->getMessage());
+        }
+    }
+
     public function imagenator(Request $request)
     {
         $amount = $request->input('imagesPerRequest', 1);

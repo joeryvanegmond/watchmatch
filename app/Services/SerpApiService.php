@@ -35,6 +35,27 @@ class SerpApiService
         }
     }
 
+    public function getDescription(string $brand, string $model)
+    {
+        try {
+            $response = OpenAI::chat()->create([
+                'model' => 'gpt-4.1-nano',
+                'messages' => [
+                    [
+                        'role' => 'assistant',
+                        'content' => $this->CreateDescriptionPrompt($brand, $model),
+                    ]
+                ]
+            ]);
+            $rawContent = $rawContent = $response->choices[0]->message->content;
+            $description = json_decode($rawContent);
+    
+            return $description ?? null;
+        } catch (\Throwable $th) {
+            throw new \Exception($th->getMessage());
+        }
+    }
+
     public function isGarbage(string $brand, string $model)
     {
         $response = OpenAI::chat()->create([
@@ -71,7 +92,18 @@ class SerpApiService
         - "price" (decimal): richtprijs in euro's (alleen getal, zonder €-teken)  
         - "url" (string): link naar een pagina waar het horloge gekocht kan worden, dit moet een ECHT werkende link zijn die naar de productpagina gaat van het horloge. Dit mag absoluut niet leeg, nep of een niet werkende link zijn.
         - "image_url" (string): directe URL naar een afbeelding van het horloge, dit moet een ECHT werkende link zijn die naar de afbeelding gaat van het horloge. Dit mag absoluut niet leeg, nep of een niet werkende link zijn.
-        
+        - "description" (string): een korte, natuurlijke beschrijving (maximaal 2 tot 3 zinnen) van dit horloge.  
+            De beschrijving moet:
+            - op menselijke toon geschreven zijn (niet generiek of robotachtig);  
+            - de stijl, het type en het gebruiksdoel kort benoemen (bijv. duikhorloge, dress watch, sportief, chronograaf, vintage geïnspireerd, etc.);  
+            - indien mogelijk een opvallend kenmerk noemen (materiaal, wijzerplaatkleur, kaliber, formaat, etc.);  
+            - geen loze marketingtaal bevatten ("prachtig", "iconisch", "geweldig", etc. vermijden);  
+            - nooit verwijzen naar de prijs of beschikbaarheid;  
+            - in neutraal Nederlands geschreven zijn (geen Engelse termen tenzij modelnaam).  
+
+        Voorbeeld van een correcte "description":
+        > "De Tudor Black Bay 58 is een compact duikhorloge van 39 mm met een vintage uitstraling en automatisch uurwerk, geïnspireerd op de duikmodellen uit de jaren 50."
+
         Gebruik **exact deze veldnamen en volgorde**. Lever minimaal 5 en maximaal 10 alternatieve horloges. Zorg dat alle strings juist geescaped zijn. Geef alleen geldige en sluitende JSON terug, zonder tekst erboven of eronder.
         
         Voorbeeldinput:
@@ -93,6 +125,32 @@ class SerpApiService
 
         Nogmaals, het is echt van belang dat de alternatieve horloges die je me geeft ECHT de zelfde stijl, zelfde vorm en kleur moeten hebben.
         EOT;
+    }
+
+    private function CreateDescriptionPrompt($brand, $model)
+    {
+        return <<<TEXT
+        Je krijgt van mij een horlogemerk en model. 
+
+        Het merk betreft {$brand} en het model is {$model}
+
+        - "description" (string): een korte, natuurlijke beschrijving (maximaal 2 tot 3 zinnen) van dit horloge.  
+            De beschrijving moet:
+            - op menselijke toon geschreven zijn (niet generiek of robotachtig);  
+            - de stijl, het type en het gebruiksdoel kort benoemen (bijv. duikhorloge, dress watch, sportief, chronograaf, vintage geïnspireerd, etc.);  
+            - indien mogelijk een opvallend kenmerk noemen (materiaal, wijzerplaatkleur, kaliber, formaat, etc.);  
+            - geen loze marketingtaal bevatten ("prachtig", "iconisch", "geweldig", etc. vermijden);  
+            - nooit verwijzen naar de prijs of beschikbaarheid;  
+            - in neutraal Nederlands geschreven zijn (geen Engelse termen tenzij modelnaam).  
+
+        Voorbeeld van een correcte "description":
+        > "De Tudor Black Bay 58 is een compact duikhorloge van 39 mm met een vintage uitstraling en automatisch uurwerk, geïnspireerd op de duikmodellen uit de jaren 50."
+
+        Verwachte output:
+        {
+        "description": "De Tudor Black Bay 58 is een compact duikhorloge van 39 mm met een vintage uitstraling en automatisch uurwerk, geïnspireerd op de duikmodellen uit de jaren 50.",
+        }
+        TEXT;
     }
 
     private function CreateIsGarbagePrompt($brand, $model)

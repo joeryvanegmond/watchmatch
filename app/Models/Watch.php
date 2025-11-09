@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Watch extends Model
 {
-    protected $fillable = ['brand','model', 'url', 'image_url','variant', 'price', 'legit'];
+    protected $fillable = ['brand','model', 'url', 'image_url','variant', 'price', 'legit', 'description'];
 
     public function similarWatches()
     {

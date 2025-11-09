@@ -5,6 +5,25 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    {{-- SEO --}}
+    <title>@yield('title', 'WatchMatch – Vergelijk horloges')</title>
+    <meta name="description" content="@yield('meta_description', 'Vergelijk prijzen, merken en modellen horloges op WatchMatch.')">
+    <meta name="keywords" content="@yield('meta_keywords', 'horloges, vergelijken, prijzen, merken, watchmatch')">
+
+    {{-- OpenGraph / social preview --}}
+    <meta property="og:title" content="@yield('og_title', 'WatchMatch')">
+    <meta property="og:description" content="@yield('og_description', 'Vind en vergelijk horloges gemakkelijk.')">
+    <meta property="og:image" content="@yield('og_image', asset('images/default-watch.jpg'))">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ url()->current() }}">
+
+    {{-- Twitter --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('twitter_title', 'WatchMatch')">
+    <meta name="twitter:description" content="@yield('twitter_description', 'Vergelijk horloges eenvoudig.')">
+    <meta name="twitter:image" content="@yield('twitter_image', asset('images/default-watch.jpg'))">
+
+
     <title>{{ config('app.name', 'Laravel') }}</title>
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">

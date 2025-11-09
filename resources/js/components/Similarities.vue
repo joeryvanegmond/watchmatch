@@ -67,7 +67,6 @@ export default {
             this.loading = true;
             axios.get(`/search?brand=${this.original.brand}&model=${this.original.model}`)
                 .then(res => {
-                    console.log(res.data.similar);
                     this.similarities.push(...res.data.similar);
                     this.loading = false;
 
