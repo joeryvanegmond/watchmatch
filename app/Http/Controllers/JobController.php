@@ -82,6 +82,7 @@ class JobController extends Controller
             return response('Generated description for ' . $watchWithoutDescription->count() . ' watches');
         } catch (\Throwable $e) {
             logger()->error("Descriptinator error: " . $e->getMessage());
+            return response($e->getMessage());
         }
     }
 
