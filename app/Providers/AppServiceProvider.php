@@ -25,7 +25,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.navigation', function ($view) {
             $view->with('watchCount', Watch::count());
             $view->with('brandCount', Watch::distinct('brand')->count('brand'));
-            $view->with('imageCount', Watch::where('image_url', 'like', '%imagekit%')->count());
+            $view->with('imageCount', Watch::whereNotNull('image_url')->count());
             $view->with('similarityCount', WatchSimilarity::count());
         });
     }
