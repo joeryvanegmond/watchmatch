@@ -35,7 +35,7 @@ class SerpApiService
         }
     }
 
-    public function getDescription(string $brand, string $model)
+    public function getDescription($data)
     {
         try {
             $response = OpenAI::chat()->create([
@@ -43,13 +43,13 @@ class SerpApiService
                 'messages' => [
                     [
                         'role' => 'assistant',
-                        'content' => $this->CreateDescriptionPrompt($brand, $model),
+                        'content' => $this->CreateDescriptionPrompt($data),
                     ]
                 ]
             ]);
             $rawContent = $rawContent = $response->choices[0]->message->content;
-            $description = json_decode($rawContent);
-            return $description ?? null;
+            $response = json_decode($rawContent);
+            return $response ?? null;
         } catch (\Throwable $th) {
             throw new \Exception($th->getMessage());
         }
@@ -126,16 +126,15 @@ class SerpApiService
         EOT;
     }
 
-    private function CreateDescriptionPrompt($brand, $model)
+    private function CreateDescriptionPrompt($data)
     {
         return <<<TEXT
         You are an expert watch data analyst.
     
-        I will give you a **watch brand** and **model**.
-        Please return a structured JSON object describing this watch based on your knowledge.
+        I will give you a json collection. I will also give you the ID of the watch of my database so I can link your json response to my data back again
+        Please return a structured JSON object describing those watches based on your knowledge.
     
-        Brand: {$brand}
-        Model: {$model}
+        {$data}
     
         Generate the following fields (in English, concise, factual — no marketing language):
     
@@ -146,15 +145,16 @@ class SerpApiService
         - "dial_color" (string): main dial color (e.g. Black, Blue, Silver, White, etc.)
         - "band_color" (string): main band color if relevant.
         - "movement" (string): movement type (e.g. Automatic, Quartz, Manual, etc.)
-        - "year" (number): introduction year if known or best estimate.
+        - "year" (number): introduction year if known or best estimate. JUST the YEAR in integers, not using characters like 2010s, but just 2010
         - "water_resistance" (number): in meters, if known.
         - "gender" (string): Male, Female, or Unisex.
         - "style" (string): design style, you MUST choose exactly one value from this list: ["Vintage", "Modern", "Classic", "Sporty", "Minimalist", "Luxury"]
         - "weight" (number): approximate grams if known or typical value.
 
         Output ONLY valid JSON in the following format:
-    
+        [
         {
+          "id": "int"
           "description": "string",
           "type": "string",
           "diameter": number,
@@ -168,10 +168,12 @@ class SerpApiService
           "style": "string",
           "weight": number
         }
-    
+        ]
+        
         Example:
-    
+        [
         {
+          "id": 32,
           "description": "The Omega Seamaster 300M is a 42mm automatic dive watch with a ceramic bezel and distinctive wave-pattern dial.",
           "type": "Dive watch",
           "diameter": 42,
@@ -184,7 +186,11 @@ class SerpApiService
           "gender": "Male",
           "style": "Sporty",
           "weight": 180
+        },
+        {
+            etc..
         }
+        ]
         TEXT;
     }
 

@@ -60,26 +60,32 @@ class JobController extends Controller
     {
         try {
             $amount = $request->input('amountPerRequest', 1);
-            
-            $watchWithoutDescription = Watch::whereNull('weight')->take($amount)->get();
-            foreach ($watchWithoutDescription as $key => $value) {
-                $result = $this->searchService->getDescription($value->brand, $value->model);
-                $value->description = $result->description ?? null;
-                $value->type = $result->type ?? null;
-                $value->diameter = $result->diameter ?? null;
-                $value->material = $result->material ?? null;
-                $value->dial_color = $result->dial_color ?? null;
-                $value->band_color = $result->band_color ?? null;
-                $value->movement = $result->movement ?? null;
-                $value->year = $result->year ?? null;
-                $value->water_resistance = $result->water_resistance ?? null;
-                $value->gender = $result->gender ?? null;
-                $value->style = $result->style ?? null;
-                $value->weight = $result->weight ?? null;
-                
-                $value->save();
+            $watchesWithoutMetadata = Watch::whereNull('weight')->select('id', 'brand', 'model')->take($amount)->get();
+            $result = $this->searchService->getDescription(json_encode($watchesWithoutMetadata));
+            $count = 0;
+            foreach ($result as $key => $value) {
+                Watch::updateOrCreate(
+                    [
+                        'id' => strtolower($value->id),
+                    ],
+                    [
+                        'description' => $value->description ?? null,
+                        'type' => $value->type ?? null,
+                        'diameter' => $value->diameter ?? null,
+                        'material' => $value->material ?? null,
+                        'dial_color' => $value->dial_color ?? null,
+                        'band_color' => $value->band_color ?? null,
+                        'movement' => $value->movement ?? null,
+                        'year' => $value->year ?? null,
+                        'water_resistance' => $value->water_resistance ?? null,
+                        'gender' => $value->gender ?? null,
+                        'style' => $value->style ?? null,
+                        'weight' => $value->weight ?? null,
+                    ]
+                );
+                $count++;
             }
-            return response('Generated description for ' . $watchWithoutDescription->count() . ' watches');
+            return response('Generated description for ' . $count . ' watches');
         } catch (\Throwable $e) {
             logger()->error("Descriptinator error: " . $e->getMessage());
             return response($e->getMessage());
