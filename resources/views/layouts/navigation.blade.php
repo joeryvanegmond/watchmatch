@@ -9,6 +9,7 @@
         <span class="text-center small" style="font-size: 0.75rem;">{{number_format($imageCount)}} images</span>
         <span class="text-center small" style="font-size: 0.75rem;">{{number_format($similarityCount)}}
             similarities</span>
+        <span class="text-center small" style="font-size: 0.75rem;">{{number_format($metadataCount)}} metadata</span>
     </div>
     <div class="row">
         <navigation class="mb-4"></navigation>

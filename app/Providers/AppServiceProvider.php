@@ -27,6 +27,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with('brandCount', Watch::distinct('brand')->count('brand'));
             $view->with('imageCount', Watch::whereNotNull('image_url')->count());
             $view->with('similarityCount', WatchSimilarity::count());
+            $view->with('metadataCount', Watch::whereNotnull('diameter')->count('diameter'));
         });
     }
 }
