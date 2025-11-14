@@ -53,7 +53,6 @@ export default {
         this.$nextTick(() => {
             this.waitForImages().then(this.setHeight);
         });
-
     },
     methods: {
         setHeight() {
