@@ -46,7 +46,7 @@ vergelijk prijzen.')
 <div class="row-fluid text-center d-flex justify-content-center">
     <div class="col-md-12">
         <h5>Similar watches</h5>
-        <similarities :original="{{$watchToCompare}}"></similarities>
+        <similarities :original="{{$watchToCompare}}" :similarities="{{$similarWatches}}"></similarities>
     </div>
 </div>
 @endsection

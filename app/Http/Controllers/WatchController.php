@@ -53,7 +53,7 @@ class WatchController extends Controller
 
         if (!$watchToCompare->image_url) $watchToCompare->image_url = $this->imageService->getPlaceholder();
 
-        $similarWatches->transform(function ($watch) {
+        $similarWatches = $similarWatches->transform(function ($watch) {
             if (is_null($watch->image_url)) {
                 $watch->image_url = $this->imageService->getPlaceholder();
             }

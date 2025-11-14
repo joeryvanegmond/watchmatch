@@ -30,15 +30,6 @@
                             </div>
                         </button>
                     </div>
-                    <!-- <button v-if="isSearching" class="btn text-secondary p-2 m-2 position-absolute top-0 end-0"
-                        :id="'watch-btn-' + watch.id" @click="link(watch.id)"><i class="bi h4 bi-heart-fill"></i></button>
-                    <div v-if="isSearching" class="progress" style="height: 10px;">
-                        <div class="progress-bar bg-success" role="progressbar"
-                            :style="{ width: Math.min((watch.pivot ? watch.pivot.link_strength : 0 / 2) * 100, 100) + '%' }"
-                            :aria-valuenow="Math.min((watch.pivot ? watch.pivot.link_strength : 0 / 2) * 100, 100)"
-                            aria-valuemin="0" aria-valuemax="100">
-                        </div>
-                    </div> -->
                 </div>
             </div>
         </div>
@@ -48,35 +39,20 @@
 <script>
 import Slider from './Slider.vue';
 export default {
-    props: ['original'],
+    props: ['original', 'similarities'],
     data() {
         return {
-            similarities: [],
             loading: false,
             watches: [],
         }
     },
     async created() {
-        await this.getSimilarities();
     },
     mounted() {
         this.sliderPlacement();
+        this.setHeight();
     },
     methods: {
-        async getSimilarities() {
-            this.loading = true;
-            axios.get(`/search?brand=${this.original.brand}&model=${this.original.model}`)
-                .then(res => {
-                    this.similarities.push(...res.data.similar);
-                    this.loading = false;
-
-                    this.$nextTick(() => {
-                        this.waitForImages().then(this.setHeight);
-                    });
-                }).catch(err => {
-                    console.error('Error loading watches:', err);
-                });
-        },
         setHeight() {
             const rowHeight = 10;
             const items = document.querySelectorAll(".card");
