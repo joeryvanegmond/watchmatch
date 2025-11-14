@@ -1,39 +1,48 @@
 <template>
     <div class="col-md-12 d-flex pt-4 pb-2 justify-content-around flex-column flex-sm-row">
-        <div class="col col-lg-4 pe-1">
-            <input class="me-sm-4" type="text" v-model="brand" placeholder="Brand" @blur="findWatch()" required />
-        </div>
-
-        <div class="col col-lg-4 ps-md-3">
-            <div class="input-group mt-3 mt-sm-0">
-                <input class="col mt-sm-0" type="text" v-model="model" placeholder="Model"
-                    @blur="findWatch()" v-on:keyup.enter="findWatch" required />
-                <button @click="findWatch()" class="border border-black bg-white mt-sm-0"
-                    style="border-top-left-radius: 0 !important; border-bottom-left-radius: 0 !important;"> <i
-                        class="bi h5 bi-search text-black p-2"></i></button>
-                <button v-if="brand && model" class="h4 ms-2 mt-1" @click="clear"><i
-                        class="bi bi-x"></i></button>
-            </div>
+        <div class="col col-lg-4 position-relative">
+            <input class="me-sm-4"
+                :style="suggestions.length ? { 'border-bottom-left-radius': '0', 'border-bottom-right-radius': '0' } : {}"
+                type="text" v-model="query" placeholder="Find watch" @keyup="findWatch()" @blur="onBlur()" required />
+            <ul v-if="suggestions.length" class="dropdown">
+                <li v-for="suggestion in suggestions" @click="showMatch(suggestion.id)">
+                    {{ suggestion.brand }} {{ suggestion.model }}
+                </li>
+            </ul>
         </div>
     </div>
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
     components: {},
     props: [],
     data() {
         return {
-            brand: '',
-            model: '',
+            query: '',
+            suggestions: [],
         }
     },
     methods: {
         findWatch() {
-            if ((this.brand && this.brand.trim() !== '') && (this.model && this.model.trim() !== '')) {
-                window.location.href = `/watch/find/?brand=${this.brand}&model=${this.model}`
-            }
+            axios.get(`/search?q=${this.query}`)
+                .then(response => {
+                    this.suggestions = response.data;
+                }).catch(error => {
+                    console.log(error);
+                });
         },
+        showMatch(id) {
+            console.log(id);
+            window.location.href = `/watch/${id}`;
+        },
+        onBlur() {
+            setTimeout(() => {
+                this.suggestions = []
+            }, 200)
+        }
     }
 };
 </script>

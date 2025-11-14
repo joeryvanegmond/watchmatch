@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -27,21 +28,22 @@ class SearchController extends Controller
         $this->similarityService = $similarityService;
     }
 
-    public function getWatches(Request $request) {
+    public function getWatches(Request $request)
+    {
         $curPage = $request->page;
 
         $filter = $request->brand;
         $query = Watch::where('image_url', 'like', '%ik.imagekit.io%');
-        
+
         if ($filter) {
             $query->where('brand', $filter);
         }
-        
+
         $watches = $query->paginate(100, ['*'], 'page', $curPage);
 
         $watches->transform(function ($watch) {
             if (is_null($watch->image_url)) {
-            $watch->image_url = $this->imageService->getPlaceholder();
+                $watch->image_url = $this->imageService->getPlaceholder();
             }
             return $watch;
         });
@@ -51,46 +53,26 @@ class SearchController extends Controller
 
     public function search(Request $request)
     {
-        $brand = $request->get('brand');
-        $model = $request->get('model');
+        $query = $request->input('q');
+        $terms = explode(' ', $query);
 
-        if (!$brand || !$model) {
-            return response()->json(['error' => 'Vul merk en model in'], 400);
+        $watches = Watch::query();
+
+        foreach ($terms as $term) {
+            $watches->where(function ($q) use ($term) {
+                $q->where('brand', 'like', "%{$term}%")
+                    ->orWhere('model', 'like', "%{$term}%");
+            });
         }
 
-        $info = null;
-
-        $watchToCompare = Watch::firstOrCreate(
-            [
-                'brand' => strtolower($brand),
-                'model' => strtolower($model),
-            ],
-            [
-                'url' => $this->urlService->create($brand, $model),
-            ]
-        );
-        if (!$watchToCompare->image_url) $watchToCompare->image_url = $this->imageService->getPlaceholder();
-
-        $existingSimilarities = $this->similarityService->getSimilarWatches($watchToCompare);
-
-        if ($existingSimilarities->isNotEmpty()) {
-            foreach ($existingSimilarities as $watch) {
-                $watch->image_url ??= $this->imageService->getPlaceholder();
-            }
-            return response()->json([
-                'original' => $watchToCompare,
-                'similar' => $existingSimilarities,
-            ]);
-        }
-
-        $results = $this->searchService->search($brand, $model);
-        $similarWatches = $this->similarityService->processAndStoreSimilarities($results, $watchToCompare);
-
-        return response()->json([
-            'original' => $watchToCompare,
-            'similar' => $similarWatches['watches'],
-            'info' => $similarWatches['info'],
-        ]);
+        return $watches
+            ->limit(50)
+            ->get()
+            ->unique(function ($item) {
+                return $item->brand . '|' . $item->model;
+            })
+            ->take(10)  
+            ->values();
     }
 
     public function link(Request $request)

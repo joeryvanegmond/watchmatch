@@ -237,3 +237,30 @@ button {
   -o-transition-timing-function:linear!important;
   transition-timing-function:linear!important;
  }
+
+
+//  search bar
+
+.dropdown {
+  position: absolute;
+  background: white;
+  border: 1px solid #ddd;
+  width: 100%;
+  z-index: 10;
+  height: 35vh;
+  overflow-y: auto;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+}
+.dropdown li {
+  padding: 8px;
+  cursor: pointer;
+}
+.dropdown li.active {
+  background: #f0f0f0;
+}
+.type {
+  color: #999;
+  font-size: 11px;
+  display: block;
+}
