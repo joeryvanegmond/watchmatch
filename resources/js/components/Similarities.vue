@@ -50,7 +50,7 @@ export default {
     },
     mounted() {
         this.sliderPlacement();
-        this.setHeight();
+        this.waitForImages().then(this.setHeight());
     },
     methods: {
         setHeight() {
