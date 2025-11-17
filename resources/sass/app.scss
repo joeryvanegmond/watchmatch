@@ -247,18 +247,24 @@ button {
   border: 1px solid #ddd;
   width: 100%;
   z-index: 10;
-  height: 35vh;
+  max-height: 35vh;
   overflow-y: auto;
   border-bottom-left-radius: 15px;
   border-bottom-right-radius: 15px;
+  padding: 0px;
 }
 .dropdown li {
-  padding: 8px;
+  padding: 8px 22px;
   cursor: pointer;
 }
 .dropdown li.active {
   background: #f0f0f0;
 }
+
+.dropdown li:hover {
+  background-color: var(--bs-gray-200);
+}
+
 .type {
   color: #999;
   font-size: 11px;
