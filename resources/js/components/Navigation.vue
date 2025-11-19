@@ -38,9 +38,9 @@ export default {
             window.location.href = `/watch/${id}`;
         },
         onBlur() {
-            // setTimeout(() => {
-            //     this.suggestions = []
-            // }, 200)
+            setTimeout(() => {
+                this.suggestions = []
+            }, 200)
         }
     }
 };
