@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\BlacklistedDomain;
+use Exception;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -35,6 +36,11 @@ class DuckDuckGoService
                 {
                     $urlFound = true; 
                     break;
+                }
+
+                if($count >= 20)
+                {
+                    throw new Exception('no image found', 404);
                 }
                 Log::warning("No usable image found on page {$page} for {$query}, trying next page..");
                 $page += 100;

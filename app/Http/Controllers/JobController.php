@@ -104,8 +104,10 @@ class JobController extends Controller
                 ->get();
     
             foreach ($watchesWithoutImage as $key => $watch) {
-                $this->imageService->fetchAndUpdateImage($watch);
-    
+                $failure = $this->imageService->fetchAndUpdateImage($watch);
+
+                if($failure) $watch->delete();
+
                 if ($amount > 1) sleep(1);
             }
     
