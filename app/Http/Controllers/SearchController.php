@@ -75,6 +75,15 @@ class SearchController extends Controller
             ->values();
     }
 
+    public function findSimilarities(Request $request) {
+        $id = $request->input('id', null);
+        $watchToCompare = Watch::find($id);
+
+        $results = $this->searchService->search($watchToCompare->brand, $watchToCompare->model);
+        $similarities = $this->similarityService->processAndStoreSimilarities($results, $watchToCompare);
+        return response($similarities);
+    }
+
     public function link(Request $request)
     {
         try {

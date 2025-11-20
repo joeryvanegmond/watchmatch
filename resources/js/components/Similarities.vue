@@ -7,11 +7,11 @@
             <div v-if="loading" class="d-flex justify-content-center mt-4">
                 <spinningwheel></spinningwheel>
             </div>
-            <div v-if="similarities.length == 0 && !loading" class=" mt-4">
+            <div v-if="sims.length == 0 && !loading" class=" mt-4">
                 <span>Niks gevonden..</span>
             </div>
             <div name="watch-fade" tag="div" class="watch-grid">
-                <div class="card d-flex flex-row" v-for="(watch, index) in similarities" :key="index" :style="{}"
+                <div class="card d-flex flex-row" v-for="(watch, index) in sims" :key="index" :style="{}"
                     :id="'watch-' + watch.id">
                     <div class="col-12">
                         <img :src="watch.image_url" alt="Watch image" class="watch-card-image" />
@@ -44,15 +44,33 @@ export default {
         return {
             loading: false,
             watches: [],
+            sims: [],
         }
     },
     async created() {
     },
     mounted() {
-        this.sliderPlacement();
-        this.$nextTick(() => {
-            this.waitForImages().then(this.setHeight);
-        });
+        this.sims.push(...this.similarities);
+        console.log(this.similarities.length);
+        if (this.similarities.length > 0) {
+            this.sliderPlacement();
+            this.$nextTick(() => {
+                this.waitForImages().then(this.setHeight);
+            });
+        } else {
+            this.loading = true;
+            axios.get(`/similarities?id=${this.original.id}`)
+                .then(res => {
+                    this.sims.push(...res.data.watches);
+                    this.loading = false;
+
+                    this.$nextTick(() => {
+                        this.waitForImages().then(this.setHeight);
+                    });
+                }).catch(err => {
+                    console.error('Error searching similarities:', err);
+                });
+        }
     },
     methods: {
         setHeight() {
